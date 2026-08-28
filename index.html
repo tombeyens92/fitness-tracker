@@ -764,13 +764,37 @@ function stopTimer(){
   ui.tick = null; ui.timer = null;
 }
 
+function beep(freq, dur, delay){
+  try{
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if(!AC) return;
+    if(!beep.ctx) beep.ctx = new AC();
+    const ctx = beep.ctx;
+    if(ctx.state === "suspended") ctx.resume();
+    const t0 = ctx.currentTime + (delay || 0);
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.type = "sine";
+    o.frequency.value = freq;
+    g.gain.setValueAtTime(0, t0);
+    g.gain.linearRampToValueAtTime(0.2, t0 + 0.01);
+    g.gain.setValueAtTime(0.2, t0 + dur - 0.02);
+    g.gain.linearRampToValueAtTime(0, t0 + dur);
+    o.connect(g).connect(ctx.destination);
+    o.start(t0);
+    o.stop(t0 + dur + 0.02);
+  }catch(e){}
+}
+
+function timerDoneBeep(){ beep(880, 0.11, 0); beep(880, 0.11, 0.18); }
+
 function startTimer(id, t){
   stopTimer();
   ui.timer = {id, left:t};
   ui.tick = setInterval(() => {
     if(!ui.timer) return stopTimer();
     ui.timer.left--;
-    if(ui.timer.left <= 0){ const x = ui.timer.id; stopTimer(); bump(x, null, true); return; }
+    if(ui.timer.left <= 0){ const x = ui.timer.id; stopTimer(); bump(x, null, true); timerDoneBeep(); return; }
     const btn = document.querySelector('.timer[data-id="'+id+'"]');
     if(btn) btn.textContent = ui.timer.left + "s — stop";
   }, 1000);
