@@ -1,0 +1,826 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Strength Rotation</title>
+<meta name="theme-color" content="#14171b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Rotation">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+:root{
+  --ink:#14171b; --surface:#1b1f25; --line:#3a424e;
+  --chalk:#e9e7e1; --muted:#98a0ad;
+  --push:#f2b01e; --core:#46cfc2; --legs:#9b82ff;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+  --disp:"Anton",Impact,Haettenschweiler,"Arial Narrow Bold",sans-serif;
+  --acc:var(--core);
+}
+*{box-sizing:border-box;}
+html,body{margin:0;background:var(--ink);}
+body{color:var(--chalk);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
+  font-size:15px;line-height:1.5;-webkit-text-size-adjust:100%;
+  padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);}
+#app{max-width:660px;margin-inline:auto;padding:22px 16px 70px;}
+#app[data-day="push"]{--acc:var(--push);}
+#app[data-day="core"]{--acc:var(--core);}
+#app[data-day="legs"]{--acc:var(--legs);}
+.mono{font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;}
+.muted{color:var(--muted);}
+button{font:inherit;color:inherit;background:none;border:none;cursor:pointer;padding:0;
+  -webkit-tap-highlight-color:transparent;}
+button:focus-visible{outline:2px solid var(--acc);outline-offset:3px;border-radius:3px;}
+.ghost{color:var(--muted);text-decoration:underline;text-underline-offset:3px;}
+.ghost:hover{color:var(--chalk);}
+h1,h2,h3,p,ul{margin:0;}
+
+/* ---- level picker ---- */
+.eyebrow{font-family:var(--mono);font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--acc);margin-bottom:10px;}
+.h1{font-family:var(--disp);font-size:50px;line-height:.94;text-transform:uppercase;margin-bottom:16px;}
+.lede{color:var(--muted);max-width:44ch;margin-bottom:26px;}
+.level{display:flex;gap:16px;align-items:center;text-align:left;width:100%;
+  background:var(--surface);border:1px solid var(--line);border-radius:2px;padding:16px 18px;margin-bottom:10px;}
+.level:hover{border-color:var(--acc);}
+.lvl-n{color:var(--acc);font-size:13px;}
+.level strong{display:block;font-weight:600;}
+.level em{display:block;font-style:normal;color:var(--muted);margin-top:2px;}
+
+/* ---- header ---- */
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px;
+  border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:22px;}
+.menubtn{border:1px solid var(--line);border-radius:2px;padding:7px 12px;color:var(--muted);
+  font-family:var(--mono);font-size:12px;letter-spacing:.1em;flex:none;}
+.menubtn:hover{border-color:var(--acc);color:var(--chalk);}
+
+/* ---- dial ---- */
+.dial-block{display:flex;gap:20px;align-items:center;margin-bottom:18px;flex-wrap:wrap;}
+.dial{width:126px;height:126px;flex:none;}
+.ring{fill:none;stroke-width:7;}
+.ring.off{stroke:var(--line);}
+.ring.on[data-k="push"]{stroke:var(--push);}
+.ring.on[data-k="core"]{stroke:var(--core);}
+.ring.on[data-k="legs"]{stroke:var(--legs);}
+.dial-letter{font-family:var(--disp);font-size:52px;fill:var(--chalk);text-anchor:middle;}
+.legend{flex:1;min-width:180px;}
+.h2{font-family:var(--disp);font-size:30px;text-transform:uppercase;letter-spacing:.02em;
+  margin-bottom:12px;color:var(--acc);}
+.legend ul{list-style:none;padding:0;display:flex;flex-direction:column;gap:6px;}
+.legend li{display:flex;align-items:center;gap:9px;color:var(--muted);}
+.legend li.on{color:var(--chalk);}
+.legend .when{margin-left:auto;font-size:10.5px;}
+.pip{width:7px;height:7px;border-radius:50%;background:var(--line);flex:none;}
+.pip[data-k="push"]{background:var(--push);}
+.pip[data-k="core"]{background:var(--core);}
+.pip[data-k="legs"]{background:var(--legs);}
+.legend li:not(.on) .pip{background:var(--line);}
+
+/* ---- muscle map ---- */
+.bodymap{display:flex;gap:16px;align-items:center;flex-wrap:wrap;
+  border:1px solid var(--line);border-radius:2px;padding:14px;margin-bottom:20px;}
+.bodies{display:flex;gap:8px;flex:none;}
+.body-svg{height:126px;width:auto;display:block;}
+.body-label{font-family:var(--mono);font-size:8px;letter-spacing:.14em;fill:var(--muted);text-anchor:middle;}
+.bodycap{flex:1;min-width:165px;}
+.bodycap .lit{color:var(--acc);margin-bottom:7px;line-height:1.5;}
+.capnote{color:var(--muted);font-size:12.5px;line-height:1.5;}
+
+/* ---- banners ---- */
+.pvbanner{display:flex;justify-content:space-between;align-items:center;gap:12px;
+  border:1px dashed var(--acc);border-radius:2px;padding:9px 12px;margin-bottom:16px;color:var(--acc);}
+.weeknote{border-left:2px solid var(--acc);padding:2px 0 2px 13px;color:var(--muted);margin-bottom:22px;}
+
+/* ---- cards ---- */
+.list{display:flex;flex-direction:column;gap:12px;}
+.card{display:flex;gap:14px;background:var(--surface);border:1px solid var(--line);
+  border-radius:2px;padding:14px;transition:opacity .2s,border-color .2s;}
+.card.done{opacity:.5;border-color:var(--acc);}
+.figbox{width:96px;flex:none;}
+.fig{width:100%;height:auto;display:block;}
+.fig .floor{stroke:var(--line);stroke-width:1.5;stroke-dasharray:3 4;fill:none;}
+.fig .body *{stroke:var(--chalk);stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round;fill:none;opacity:.9;}
+.card.done .fig .body *{stroke:var(--acc);}
+.cardbody{flex:1;min-width:0;}
+.cardhead{display:flex;justify-content:space-between;align-items:baseline;gap:10px;}
+.cardhead h3{font-size:16px;font-weight:600;}
+.dose{color:var(--acc);flex:none;}
+.cue{color:var(--muted);font-size:13.5px;margin-top:5px;}
+.harder{color:var(--acc);margin-top:6px;text-transform:none;letter-spacing:.02em;}
+.controls{display:flex;align-items:center;gap:12px;margin-top:11px;flex-wrap:wrap;}
+.dots{display:flex;gap:7px;}
+.dot{width:30px;height:30px;border:2px solid var(--muted);border-radius:50%;background:transparent;}
+.dot:hover{border-color:var(--chalk);}
+.dot.half{background:linear-gradient(90deg,var(--acc) 0 50%,transparent 50% 100%);border-color:var(--acc);}
+.dot.filled{background:var(--acc);border-color:var(--acc);}
+.timer{border:1px solid var(--muted);border-radius:2px;padding:7px 12px;color:var(--chalk);
+  font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;}
+.timer:hover{border-color:var(--acc);color:var(--acc);}
+.timer.running{border-color:var(--acc);color:var(--acc);}
+.swap{display:flex;gap:7px;margin-top:8px;flex-wrap:wrap;}
+.chip{border:1px solid var(--line);border-radius:2px;padding:5px 10px;color:var(--muted);
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;}
+.chip:hover{border-color:var(--acc);color:var(--chalk);}
+.chip.on{border-color:var(--acc);color:var(--acc);}
+.chip.on[data-k="push"]{border-color:var(--push);color:var(--push);}
+.chip.on[data-k="core"]{border-color:var(--core);color:var(--core);}
+.chip.on[data-k="legs"]{border-color:var(--legs);color:var(--legs);}
+
+/* ---- finish ---- */
+.finish{width:100%;margin-top:20px;padding:16px;border:1px solid var(--line);border-radius:2px;
+  font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);}
+.finish.ready{background:var(--acc);color:var(--ink);border-color:var(--acc);font-weight:700;}
+.finish.logged{border-style:dashed;color:var(--acc);}
+
+/* ---- streak ---- */
+.streak{margin-top:30px;}
+.streakhead{display:flex;justify-content:space-between;align-items:baseline;}
+.grid{display:grid;grid-template-columns:repeat(21,1fr);gap:3px;margin-top:8px;}
+.cell{aspect-ratio:1;background:var(--surface);border:1px solid var(--line);border-radius:1px;padding:0;}
+.cell.hit{background:var(--muted);border-color:var(--muted);}
+.cell.hit[data-k="push"]{background:var(--push);border-color:var(--push);}
+.cell.hit[data-k="core"]{background:var(--core);border-color:var(--core);}
+.cell.hit[data-k="legs"]{background:var(--legs);border-color:var(--legs);}
+.cell.editable:not(.hit){border-style:dashed;}
+.cell.editable:hover{border-color:var(--chalk);}
+.key{display:flex;gap:16px;margin-top:10px;flex-wrap:wrap;}
+.key span{display:flex;align-items:center;gap:6px;color:var(--muted);}
+.hint{color:var(--muted);font-size:12.5px;margin-top:10px;line-height:1.5;}
+.hint em{font-style:normal;color:var(--chalk);}
+
+.retest{margin-top:20px;border:1px solid var(--acc);border-radius:2px;padding:14px;}
+.retest p{margin-bottom:11px;font-size:13.5px;}
+footer{margin-top:30px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted);font-size:13px;}
+footer p{margin-bottom:8px;}
+footer strong{color:var(--chalk);font-weight:600;}
+
+/* ---- sheet ---- */
+.sheet{position:fixed;inset:0;background:var(--ink);z-index:50;display:flex;flex-direction:column;
+  padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom);}
+.sheet[hidden]{display:none;}
+.sheethead{display:flex;justify-content:space-between;align-items:center;gap:12px;
+  padding:16px;border-bottom:1px solid var(--line);flex:none;}
+.sheethead h2{font-family:var(--disp);font-size:24px;text-transform:uppercase;letter-spacing:.02em;}
+.sheetbody{overflow-y:auto;padding:8px 16px 40px;max-width:660px;width:100%;margin-inline:auto;
+  -webkit-overflow-scrolling:touch;}
+.menulist{list-style:none;padding:0;}
+.menulist li{border-bottom:1px solid var(--line);}
+.menulist button{display:flex;width:100%;text-align:left;gap:14px;align-items:center;padding:16px 2px;}
+.menulist strong{display:block;font-weight:600;font-size:15.5px;}
+.menulist em{display:block;font-style:normal;color:var(--muted);font-size:12.5px;margin-top:2px;line-height:1.45;}
+.menulist .arrow{margin-left:auto;color:var(--muted);flex:none;}
+.menulist .danger strong{color:#ff8b7a;}
+.sect{padding:16px 0;}
+.sect>.mono{display:block;margin-bottom:8px;}
+.sect p{color:var(--muted);font-size:13px;line-height:1.55;}
+.plan[data-day="push"]{--acc:var(--push);}
+.plan[data-day="core"]{--acc:var(--core);}
+.plan[data-day="legs"]{--acc:var(--legs);}
+.ptable{width:100%;border-collapse:collapse;font-size:12px;margin-top:12px;}
+.ptable th,.ptable td{text-align:right;padding:8px 4px;border-bottom:1px solid var(--line);color:var(--muted);
+  font-family:var(--mono);letter-spacing:.05em;}
+.ptable th:first-child,.ptable td:first-child{text-align:left;}
+.ptable .pname{color:var(--chalk);font-size:13px;font-family:inherit;letter-spacing:0;}
+.ptable .now{color:var(--acc);}
+.planwhy{list-style:none;padding:0;margin-top:16px;display:flex;flex-direction:column;gap:8px;
+  font-size:12.5px;color:var(--muted);line-height:1.5;}
+.planwhy li.on{color:var(--chalk);}
+.planwhy .mono{color:var(--acc);margin-right:7px;}
+.ta{width:100%;background:var(--surface);color:var(--chalk);border:1px solid var(--line);border-radius:2px;
+  padding:10px;resize:vertical;font-family:var(--mono);font-size:11px;line-height:1.5;margin-top:10px;}
+.io{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;}
+.io button{border:1px solid var(--line);border-radius:2px;padding:9px 13px;color:var(--muted);
+  font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;}
+.io button:hover{border-color:var(--acc);color:var(--chalk);}
+.io-msg{color:var(--acc);margin-top:12px;font-size:12.5px;line-height:1.5;}
+.hidden-input{display:none;}
+.install{margin-top:20px;border:1px dashed var(--acc);border-radius:2px;padding:12px;color:var(--acc);
+  font-size:12.5px;line-height:1.5;}
+
+@media (max-width:400px){
+  .h1{font-size:42px;}
+  .card{flex-direction:column;}
+  .figbox{width:112px;}
+  .bodymap{gap:12px;padding:12px;}
+  .body-svg{height:112px;}
+  .bodycap{min-width:140px;}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<div class="sheet" id="sheet" hidden role="dialog" aria-modal="true" aria-labelledby="sheettitle">
+  <div class="sheethead">
+    <h2 id="sheettitle">Menu</h2>
+    <button class="ghost mono" data-act="sheet-back" id="sheetback" hidden>back</button>
+    <button class="menubtn" data-act="sheet-close">close</button>
+  </div>
+  <div class="sheetbody" id="sheetbody"></div>
+</div>
+
+<input type="file" id="fileinput" class="hidden-input" accept=".json,application/json">
+
+<script>
+"use strict";
+
+/* ================= data ================= */
+
+const EX = {
+  pushup:{name:"Pushups",base:[6,12,20],cue:"Elbows about 45\u00b0 from your ribs, not flared wide. Beginner: drop to knees.",harder:"Decline \u2014 feet up on a chair"},
+  pike_floor:{name:"Pike pushups \u00b7 floor",short:"Floor",base:[5,8,12],cue:"Hands on the floor, hips high, crown of your head toward the floor between your hands. Knees soft is fine.",harder:"Feet elevated on a step"},
+  pike_chair:{name:"Pike pushups \u00b7 chair",short:"Chair",base:[5,8,12],cue:"Hands on a chair seat. Hips high, head lowering between your hands. Bend the knees as much as you need.",harder:"Drop to the floor"},
+  pike_counter:{name:"Pike pushups \u00b7 counter",short:"Counter",base:[5,8,12],cue:"Hands on a kitchen counter, feet on the floor, hips high. The higher your hands, the less hamstring length you need.",harder:"Drop to a chair"},
+  dip:{name:"Chair dips",base:[6,10,15],cue:"Stay close to the bench. Shoulders down, never shrugged up to your ears.",harder:"Legs straight out in front"},
+  plank:{name:"Plank",hold:true,base:[20,40,60],cue:"Squeeze your glutes and tuck the ribs down. A sagging plank trains nothing.",harder:"Lift one foot, alternate every 5s"},
+  sideplank:{name:"Side plank",hold:true,side:true,base:[15,25,40],cue:"Stack the hips and drive the bottom hip up toward the ceiling.",harder:"Top leg raised"},
+  deadbug:{name:"Dead bug",side:true,base:[8,10,12],cue:"Lower back stays glued to the floor. Slow beats far \u2014 stop where it lifts.",harder:"Hold a book in the moving hand"},
+  hollow:{name:"Hollow hold",hold:true,base:[15,25,40],cue:"Press the lower back into the floor. If it lifts, raise the legs higher.",harder:"Arms fully overhead"},
+  squat:{name:"Squats",base:[10,18,25],cue:"Knees track over your toes, weight through the midfoot.",harder:"3-second lower, or single-leg to a chair"},
+  lunge:{name:"Lunges",side:true,base:[6,10,14],cue:"Back knee kisses the floor, front shin stays close to vertical.",harder:"Rear foot elevated on a chair"},
+  bridge:{name:"Glute bridge",base:[12,15,20],cue:"Drive through the heels, ribs down \u2014 squeeze glutes, don't arch the back.",harder:"One leg at a time"},
+  row:{name:"Inverted rows",short:"Table row",base:[6,10,14],cue:"Under a sturdy table. Pull chest to the edge, shoulder blades back and down.",harder:"Feet up on a chair"},
+  ytw:{name:"Y-T-W raises",short:"Y-T-W",base:[6,8,10],cue:"Face down, forehead on the floor. Lift the arms a few cm and hold each shape \u2014 Y, then T, then W. That's one rep.",harder:"Pause 3 seconds in each shape"}
+};
+
+const DAYS = [
+  {id:"A",name:"Push",focus:"chest \u00b7 shoulders \u00b7 triceps",key:"push",ex:["pushup",["pike_floor","pike_chair","pike_counter"],"dip"]},
+  {id:"B",name:"Core",focus:"abs \u00b7 obliques \u00b7 stabilisers",key:"core",ex:["plank","sideplank","deadbug","hollow"]},
+  {id:"C",name:"Legs + Pull",focus:"quads \u00b7 glutes \u00b7 upper back",key:"legs",ex:["squat","lunge","bridge",["row","ytw"]]}
+];
+
+const WEEKS = [
+  {sets:2,rep:0,hold:0,note:"Groove the movements. Half of what you could do."},
+  {sets:3,rep:0,hold:10,note:"Same reps, one more set. Holds get 10 seconds longer."},
+  {sets:3,rep:2,hold:20,note:"Add two reps per set. This is the week it starts to bite."},
+  {sets:3,rep:2,hold:20,note:"Same volume, harder variations. Then retest and start over."}
+];
+
+const LEVELS = ["Beginner","Intermediate","Advanced"];
+const LEVEL_HINT = ["under 10 pushups / 30s plank","10\u201325 pushups / 30\u201360s plank","25+ pushups / 60s+ plank"];
+
+const KEY = "strength:v1";
+const SLOTS = DAYS.flatMap(d => d.ex.filter(Array.isArray));
+const known = id => Object.prototype.hasOwnProperty.call(EX, id);
+const halves = id => !!(EX[id] && EX[id].hold && EX[id].side);
+const unitsFor = (id, sets) => halves(id) ? sets*2 : sets;
+const today = () => { const d=new Date(); return new Date(d.getTime()-d.getTimezoneOffset()*6e4).toISOString().slice(0,10); };
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+/* ================= figures ================= */
+
+const fig = (label, inner) =>
+  `<svg viewBox="0 0 100 62" class="fig" role="img" aria-label="${esc(label)}">
+     <line class="floor" x1="6" y1="54" x2="94" y2="54"/><g class="body">${inner}</g></svg>`;
+const pl = pts => `<polyline points="${pts}"/>`;
+const ci = (x,y,r) => `<circle cx="${x}" cy="${y}" r="${r}"/>`;
+
+const FIGS = {
+  pushup: fig("Pushup", pl("14,50 40,42 62,34")+ci(70,31,5)+pl("62,34 64,50")),
+  pike_floor: fig("Pike pushup on the floor", pl("16,50 44,18 68,40")+pl("68,40 78,50")+ci(73,47,5)),
+  pike_chair: fig("Pike pushup, hands on a chair", pl("62,38 94,38")+pl("90,38 90,54")+pl("14,52 44,20 68,36")+ci(74,41,5)+pl("68,36 79,37")),
+  pike_counter: fig("Pike pushup, hands on a counter", pl("64,24 94,24")+pl("90,24 90,54")+pl("14,52 44,22 70,32")+ci(76,36,5)+pl("70,32 81,25")),
+  dip: fig("Chair dip", pl("8,36 34,36")+pl("12,36 12,52")+pl("30,36 30,52")+ci(38,18,5)+pl("40,25 46,42 70,48 80,50")+pl("40,25 34,36")),
+  plank: fig("Forearm plank", pl("14,48 42,40 66,32")+ci(74,30,5)+pl("66,32 68,48 82,48")),
+  sideplank: fig("Side plank", pl("16,50 44,38 66,28")+ci(76,24,5)+pl("66,28 64,50")+pl("66,28 72,10")),
+  deadbug: fig("Dead bug", pl("26,48 58,48")+ci(20,45,5)+pl("30,48 24,28")+pl("58,48 74,32 84,38")+pl("58,48 80,52")),
+  hollow: fig("Hollow hold", '<path d="M 26,40 Q 44,50 62,42"/>'+ci(24,34,5)+pl("27,38 14,28")+pl("61,42 84,28")),
+  squat: fig("Squat", pl("30,50 52,38 34,34 30,20")+ci(28,13,5)+pl("31,21 52,24")),
+  lunge: fig("Lunge", pl("66,50 66,32 46,26")+pl("46,26 26,44 18,50")+pl("46,26 46,15")+ci(46,9,5)+pl("46,18 52,28")),
+  bridge: fig("Glute bridge", pl("66,50 66,32 44,32 24,44")+ci(17,46,5)+pl("24,46 34,51")),
+  row: fig("Inverted row", pl("12,14 88,14")+pl("16,46 44,42 66,38")+ci(74,36,5)+pl("66,38 68,15")),
+  ytw: fig("Prone Y-T-W raise", pl("16,52 36,50 62,48")+ci(70,46,5)+pl("62,48 80,38")+pl("62,48 76,33"))
+};
+
+const HARD_FIGS = {
+  pushup: fig("Decline pushup", pl("8,34 30,34")+pl("26,34 26,54")+pl("14,32 42,38 66,44")+ci(74,46,5)+pl("66,44 66,52")),
+  pike_floor: fig("Pike pushup, feet elevated", pl("8,36 28,36")+pl("24,36 24,54")+pl("12,34 46,16 68,42")+pl("68,42 78,51")+ci(73,48,5)),
+  pike_chair: FIGS.pike_floor,
+  pike_counter: FIGS.pike_chair,
+  dip: fig("Chair dip, legs straight", pl("8,36 34,36")+pl("12,36 12,52")+pl("30,36 30,52")+ci(38,18,5)+pl("40,25 46,40 84,40")+pl("40,25 34,36")),
+  plank: fig("Plank, one foot lifted", pl("14,48 42,40 66,32")+ci(74,30,5)+pl("66,32 68,48 82,48")+pl("42,40 16,32")),
+  sideplank: fig("Side plank, top leg raised", pl("16,50 44,38 66,28")+ci(76,24,5)+pl("66,28 64,50")+pl("66,28 72,10")+pl("44,38 18,34")),
+  deadbug: fig("Dead bug with weight", pl("26,48 58,48")+ci(20,45,5)+pl("30,48 24,28")+pl("18,22 30,22 30,28 18,28 18,22")+pl("58,48 74,32 84,38")+pl("58,48 80,52")),
+  hollow: fig("Hollow hold, arms overhead", '<path d="M 26,40 Q 44,50 62,42"/>'+ci(24,34,5)+pl("27,38 10,26")+pl("61,42 86,24")),
+  squat: fig("Single-leg squat to a chair", pl("8,34 30,34")+pl("26,34 26,54")+pl("34,50 54,38 36,32 32,20")+ci(30,13,5)+pl("33,21 54,24")+pl("36,32 62,30 70,36")),
+  lunge: fig("Lunge, rear foot elevated", pl("8,36 28,36")+pl("24,36 24,54")+pl("66,50 66,32 46,26")+pl("46,26 30,38 16,34")+pl("46,26 46,15")+ci(46,9,5)),
+  bridge: fig("Single-leg glute bridge", pl("66,50 66,32 44,32 24,44")+ci(17,46,5)+pl("24,46 34,51")+pl("44,32 74,20")),
+  row: fig("Inverted row, feet elevated", pl("12,14 88,14")+pl("6,44 24,44")+pl("20,44 20,54")+pl("14,42 44,40 66,38")+ci(74,36,5)+pl("66,38 68,15"))
+};
+
+/* muscle map */
+const mg = (g, active, shapes) =>
+  `<g fill="var(--${g})" fill-opacity="${g===active?1:0.17}">${shapes}</g>`;
+const rr = (x,y,w,h,r) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${r}"/>`;
+const el = (x,y,rx,ry) => `<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}"/>`;
+const SIL = `<g fill="none" stroke="var(--line)" stroke-width="1.5">
+  <circle cx="32" cy="11" r="7.5"/><rect x="20" y="21" width="24" height="49" rx="7"/>
+  <rect x="21" y="67" width="22" height="11" rx="4"/><rect x="8" y="25" width="9" height="45" rx="4.5"/>
+  <rect x="47" y="25" width="9" height="45" rx="4.5"/><rect x="21" y="76" width="10" height="50" rx="5"/>
+  <rect x="33" y="76" width="10" height="50" rx="5"/></g>`;
+
+function body(view, active){
+  const parts = view === "front"
+    ? mg("push",active, el(12.5,30,4.5,6)+el(51.5,30,4.5,6)+rr(21.5,26,10,12,3.5)+rr(32.5,26,10,12,3.5))
+    + mg("legs",active, rr(9,39,7,14,3.5)+rr(48,39,7,14,3.5)+rr(22,79,8,25,4)+rr(34,79,8,25,4))
+    + mg("core",active, rr(27,41,10,21,3)+rr(21.5,43,4.5,18,2.2)+rr(38,43,4.5,18,2.2))
+    : mg("push",active, el(12.5,30,4.5,6)+el(51.5,30,4.5,6)+rr(9,39,7,15,3.5)+rr(48,39,7,15,3.5))
+    + mg("legs",active, rr(25,24,14,10,3)+rr(21.5,36,9,18,3)+rr(33.5,36,9,18,3)+rr(22,68,9,10,3)+rr(33,68,9,10,3)+rr(22,80,8,22,4)+rr(34,80,8,22,4)+rr(23,106,6.5,16,3.2)+rr(34.5,106,6.5,16,3.2))
+    + mg("core",active, rr(27,56,10,11,3));
+  return `<svg viewBox="0 0 64 142" class="body-svg" role="img" aria-label="${view} muscle map">
+    ${SIL}${parts}<text x="32" y="138" class="body-label">${view==="front"?"FRONT":"BACK"}</text></svg>`;
+}
+
+/* ================= state ================= */
+
+function defaults(){
+  const choices = {};
+  SLOTS.forEach(o => { choices[o[0]] = o[0]; });
+  return {level:null,cycle:0,sessions:0,logBase:0,log:[],logDetail:{},choices,progress:{},progressDate:today()};
+}
+
+function sanitize(v, fallbackLevel){
+  if(!v || typeof v !== "object") return null;
+  const level = (typeof v.level === "number" && v.level >= 0 && v.level <= 2) ? v.level : fallbackLevel;
+  if(typeof level !== "number") return null;
+  if(typeof v.sessions !== "number" || v.sessions < 0 || !Array.isArray(v.log)) return null;
+
+  const log = v.log.filter(d => typeof d === "string" && /^\d{4}-\d{2}-\d{2}$/.test(d)).sort();
+  const detail = {};
+  if(v.logDetail && typeof v.logDetail === "object"){
+    for(const d in v.logDetail){
+      if(log.includes(d) && DAYS.some(x => x.key === v.logDetail[d])) detail[d] = v.logDetail[d];
+    }
+  }
+  if(Math.round(v.sessions) === log.length){
+    log.forEach((d,i) => { if(!detail[d]) detail[d] = DAYS[i%3].key; });
+  }
+  const progress = {};
+  if(v.progressDate === today() && v.progress && typeof v.progress === "object"){
+    for(const id in v.progress){
+      const n = v.progress[id];
+      if(known(id) && typeof n === "number" && n >= 0) progress[id] = Math.min(6, Math.round(n));
+    }
+  }
+  const choices = {};
+  SLOTS.forEach(opts => {
+    const k = opts[0], picked = v.choices && v.choices[k];
+    if(opts.includes(picked)) choices[k] = picked;
+    else if(k === "row" && opts.includes(v.pullChoice)) choices[k] = v.pullChoice;
+    else choices[k] = k;
+  });
+  return {
+    level, cycle:[0,1,2].includes(v.cycle) ? v.cycle : 0,
+    sessions: Math.round(v.sessions),
+    logBase: (typeof v.logBase === "number" && v.logBase >= 0) ? Math.round(v.logBase) : 0,
+    log, logDetail:detail, choices, progress, progressDate: today()
+  };
+}
+
+let S = defaults();
+const ui = {panel:null, planDay:null, preview:false, editGrid:false, timer:null, tick:null, draft:"", msg:"", deferredPrompt:null};
+
+function load(){
+  try{
+    const raw = localStorage.getItem(KEY);
+    if(raw){ const c = sanitize(JSON.parse(raw), null); if(c) S = c; }
+  }catch(e){ /* corrupt or unavailable storage: start fresh */ }
+}
+function save(){
+  try{ localStorage.setItem(KEY, JSON.stringify(S)); }
+  catch(e){ ui.msg = "Storage is full or blocked — your last change may not survive a reload."; }
+}
+
+/* ================= derived ================= */
+
+const week = () => Math.min(4, Math.floor(S.sessions/7)+1);
+const Wk = () => WEEKS[week()-1];
+const day = () => DAYS[S.cycle];
+const pick = e => Array.isArray(e) ? (e.includes(S.choices[e[0]]) ? S.choices[e[0]] : e[0]) : e;
+const exList = d => (d||day()).ex.map(pick).filter(known);
+const slotFor = (d,id) => (d||day()).ex.find(e => Array.isArray(e) && e.includes(id));
+const targetFor = (id,w) => EX[id].base[S.level] + (EX[id].hold ? WEEKS[w-1].hold : WEEKS[w-1].rep);
+const allDone = () => exList().every(id => (S.progress[id]||0) >= unitsFor(id, Wk().sets));
+
+/* ================= render ================= */
+
+const app = document.getElementById("app");
+
+function render(){
+  if(S.level === null){ renderLevel(); return; }
+  app.dataset.day = day().key;
+  const d = day(), W = Wk(), logged = S.log.includes(today());
+
+  app.innerHTML = `
+  <header class="top">
+    <button class="mono muted" data-act="open" data-panel="plan">WEEK ${week()} OF 4 \u00b7 SESSION ${S.sessions+1}</button>
+    <button class="menubtn" data-act="menu" aria-haspopup="dialog">\u22ef menu</button>
+  </header>
+
+  <section class="dial-block">
+    ${dial(d)}
+    <div class="legend">
+      <h2 class="h2">${esc(d.name)}</h2>
+      <ul>${[0,1,2].map(o => {
+        const x = DAYS[(S.cycle+o)%3];
+        return `<li class="${o===0?"on":""}"><i class="pip" data-k="${o===0?x.key:""}"></i>
+          <span class="mono">${esc(x.name)}</span>
+          <span class="mono when">${o===0?"today":o===1?"tomorrow":"in 2 days"}</span></li>`;
+      }).join("")}</ul>
+    </div>
+  </section>
+
+  <section class="bodymap">
+    <div class="bodies">${body("front",d.key)}${body("back",d.key)}</div>
+    <div class="bodycap">
+      <p class="mono lit">TODAY \u00b7 ${esc(d.focus)}</p>
+      <p class="capnote">The faded muscles are the other two days, still recovering. Nothing lights up twice in a row \u2014 that's the whole point of the rotation.</p>
+    </div>
+  </section>
+
+  ${ui.preview && week() !== 4 ? `<div class="pvbanner">
+    <span class="mono">WEEK 4 PREVIEW \u2014 targets are still week ${week()}</span>
+    <button class="ghost mono" data-act="preview-off">exit</button></div>` : ""}
+
+  <p class="weeknote">${esc(W.note)}</p>
+  <div class="list" id="cards">${cardsHTML()}</div>
+
+  <button class="finish ${logged?"logged":allDone()?"ready":""}" data-act="finish">
+    ${logged ? "Already logged today \u2713" : allDone() ? "Finish day \u2192" : "Log day as done \u2192"}
+  </button>
+
+  <section class="streak">
+    <div class="streakhead">
+      <p class="mono muted">LAST 21 DAYS</p>
+      <button class="ghost mono" data-act="toggle-edit">${ui.editGrid?"done":"fix dates"}</button>
+    </div>
+    <div class="grid" id="grid">${gridHTML()}</div>
+    ${ui.editGrid ? `<p class="hint">Tap a square to cycle it: Push \u2192 Core \u2192 Legs \u2192 empty. Your session count and what's up next both follow the grid, so a session you forgot to log gets fully credited. Override the order under <em>Next up</em> in the menu.</p>` : ""}
+    <div class="key">${DAYS.map(x => `<span class="mono"><i class="pip" data-k="${x.key}"></i>${esc(x.name)}</span>`).join("")}</div>
+  </section>
+
+  ${S.sessions >= 28 ? `<div class="retest">
+    <p>Four weeks done. Retest your max pushups and plank \u2014 one honest set of each \u2014 then restart. Your history stays; the weeks reset to 1 and you pick a level against your new numbers.</p>
+    <button class="chip on" data-act="restart">retest &amp; restart</button></div>` : ""}
+
+  <footer>
+    <p>Stop every set about <strong>2 reps before failure</strong>. Going to failure daily is what breaks the streak.</p>
+    <p>Feeling beaten up? Swap a day for a walk or stretching. That's part of the plan, not a miss.</p>
+  </footer>`;
+}
+
+function dial(d){
+  const arc = i => {
+    const a1 = (-90+i*120+5)*Math.PI/180, a2 = (-90+i*120+115)*Math.PI/180, r = 47;
+    return `M ${60+r*Math.cos(a1)} ${60+r*Math.sin(a1)} A ${r} ${r} 0 0 1 ${60+r*Math.cos(a2)} ${60+r*Math.sin(a2)}`;
+  };
+  return `<svg viewBox="0 0 120 120" class="dial" aria-hidden="true">
+    ${[0,1,2].map(i => `<path d="${arc(i)}" class="ring ${i===S.cycle?"on":"off"}" data-k="${DAYS[i].key}"/>`).join("")}
+    <text x="60" y="70" class="dial-letter">${d.id}</text></svg>`;
+}
+
+function cardsHTML(){
+  const W = Wk(), hard = ui.preview || week() === 4;
+  return exList().map(id => {
+    const e = EX[id], t = targetFor(id, week()), done = S.progress[id]||0, max = unitsFor(id, W.sets);
+    const slot = slotFor(null, id);
+    const dots = Array.from({length:W.sets}, (_,i) => {
+      const full = halves(id) ? done >= (i+1)*2 : done > i;
+      const half = halves(id) && done === i*2+1;
+      return `<button class="dot${full?" filled":""}${half?" half":""}" data-act="dot" data-id="${id}" data-i="${i}"
+        aria-pressed="${full}" aria-label="Set ${i+1}"></button>`;
+    }).join("");
+    const running = ui.timer && ui.timer.id === id;
+    const tlabel = running ? ui.timer.left + "s \u2014 stop"
+      : halves(id) ? `start ${t}s \u00b7 ${done%2===0?"1st side":"2nd side"}` : `start ${t}s`;
+    return `<article class="card${done>=max?" done":""}">
+      <div class="figbox">${(hard && HARD_FIGS[id]) || FIGS[id]}</div>
+      <div class="cardbody">
+        <div class="cardhead"><h3>${esc(e.name)}</h3>
+          <span class="mono dose">${W.sets} \u00d7 ${e.hold?t+"s":t}${e.side?" / side":""}</span></div>
+        ${slot ? `<div class="swap" role="group" aria-label="Variant">${slot.filter(known).map(p =>
+          `<button class="chip${p===id?" on":""}" data-act="slot" data-slot="${slot[0]}" data-pick="${p}"
+            aria-pressed="${p===id}">${esc(EX[p].short||EX[p].name)}</button>`).join("")}</div>` : ""}
+        <p class="cue">${esc(e.cue)}</p>
+        ${hard ? `<p class="mono harder">week 4 \u2192 ${esc(e.harder)}${HARD_FIGS[id]?"":" (same position, harder tempo)"}</p>` : ""}
+        <div class="controls">
+          <div class="dots" role="group" aria-label="Sets for ${esc(e.name)}">${dots}</div>
+          ${e.hold ? `<button class="timer${running?" running":""}" data-act="timer" data-id="${id}" data-t="${t}">${tlabel}</button>` : ""}
+        </div>
+      </div></article>`;
+  }).join("");
+}
+
+function gridHTML(){
+  return Array.from({length:21}, (_,i) => {
+    const dt = new Date(); dt.setDate(dt.getDate()-(20-i));
+    const iso = new Date(dt.getTime()-dt.getTimezoneOffset()*6e4).toISOString().slice(0,10);
+    const hit = S.log.includes(iso), k = S.logDetail[iso] || "";
+    const cls = `cell${hit?" hit":""}${ui.editGrid?" editable":""}`;
+    const label = iso + (hit && k ? " \u00b7 " + k : "");
+    return ui.editGrid
+      ? `<button class="${cls}" data-k="${k}" data-act="cell" data-iso="${iso}" title="${label}" aria-label="${label}"></button>`
+      : `<i class="${cls}" data-k="${k}" title="${label}"></i>`;
+  }).join("");
+}
+
+function renderLevel(){
+  delete app.dataset.day;
+  app.innerHTML = `<p class="eyebrow">Step one</p>
+    <h1 class="h1">Where are you<br>starting?</h1>
+    <p class="lede">Do one honest max set of pushups and one max plank hold, then pick the row you landed in. Your working reps will be about half your max \u2014 that's the point, not a compromise.</p>
+    ${LEVELS.map((l,i) => `<button class="level" data-act="level" data-i="${i}">
+      <span class="mono lvl-n">${i+1}</span>
+      <span><strong>${l}</strong><em class="mono">${LEVEL_HINT[i]}</em></span></button>`).join("")}`;
+}
+
+/* ================= sheet ================= */
+
+const sheet = document.getElementById("sheet");
+const sheetBody = document.getElementById("sheetbody");
+const sheetTitle = document.getElementById("sheettitle");
+const sheetBack = document.getElementById("sheetback");
+
+const MENU = [
+  {id:"plan",  t:"Plan & progression", s:"Every week's targets, and a preview of the week-4 variations."},
+  {id:"next",  t:"Next up",            s:"Realign the rotation if it drifts out of step."},
+  {id:"dates", t:"Fix dates",          s:"Correct which day a session was logged on."},
+  {id:"level", t:"Change level",       s:"Retest your max and rescale every target."},
+  {id:"backup",t:"Backup & restore",   s:"Copy your log out, or paste a saved one back in."},
+  {id:"reset", t:"Reset cycle",        s:"Clear weeks, sessions and history. Keeps your level.", danger:true}
+];
+
+function openSheet(panel){
+  ui.panel = panel || null;
+  ui.msg = "";
+  if(panel === "backup") ui.draft = JSON.stringify(Object.assign({}, S, {saved:today()}), null, 2);
+  sheet.hidden = false;
+  document.body.style.overflow = "hidden";
+  renderSheet();
+}
+function closeSheet(){
+  sheet.hidden = true;
+  document.body.style.overflow = "";
+  ui.panel = null;
+}
+
+function renderSheet(){
+  const p = ui.panel;
+  sheetBack.hidden = !p;
+  sheetTitle.textContent = p ? (MENU.find(m => m.id === p) || {t:"Menu"}).t : "Menu";
+  sheetBody.scrollTop = 0;
+  if(!p){
+    sheetBody.innerHTML = `<ul class="menulist">${MENU.map(m =>
+      `<li><button data-act="open" data-panel="${m.id}" class="${m.danger?"danger":""}">
+        <span><strong>${m.t}</strong><em>${m.s}</em></span><span class="arrow">\u203a</span></button></li>`).join("")}</ul>
+      ${installHTML()}`;
+    return;
+  }
+  if(p === "plan") sheetBody.innerHTML = planHTML();
+  else if(p === "next") sheetBody.innerHTML = nextHTML();
+  else if(p === "backup") sheetBody.innerHTML = backupHTML();
+  else if(p === "level"){
+    sheetBody.innerHTML = `<div class="sect"><p>Retest with one max set of pushups and one max plank hold, then pick again. Every target rescales; your logged history is untouched.</p></div>
+      ${LEVELS.map((l,i) => `<button class="level" data-act="level" data-i="${i}">
+        <span class="mono lvl-n">${i+1}</span><span><strong>${l}</strong>
+        <em class="mono">${LEVEL_HINT[i]}${i===S.level?" \u00b7 current":""}</em></span></button>`).join("")}`;
+  }
+  else if(p === "reset"){
+    sheetBody.innerHTML = `<div class="sect">
+      <p>This clears your session count, week position and all logged days. Your level stays. There is no undo \u2014 take a backup first if you might want the history.</p>
+      <div class="io"><button data-act="do-reset">reset everything</button>
+      <button data-act="open" data-panel="backup">back up first</button></div></div>`;
+  }
+}
+
+function planHTML(){
+  const pd = DAYS[ui.planDay == null ? S.cycle : ui.planDay];
+  const list = exList(pd);
+  const w = week(), toNext = w < 4 ? 7*w - S.sessions : 0;
+  return `<div class="sect plan" data-day="${pd.key}">
+    <p>${w < 4
+      ? `${toNext} more ${toNext===1?"session":"sessions"} until week ${w+1}. A week here is 7 logged sessions, not 7 calendar days \u2014 miss a day and the plan simply waits for you.`
+      : "Final week. After session 28, retest and run the same four weeks against your new numbers."}</p>
+    <span class="mono muted" style="display:block;margin-top:14px">SHOW PLAN FOR</span>
+    <div class="swap">${DAYS.map((d,i) =>
+      `<button class="chip${d===pd?" on":""}" data-k="${d.key}" data-act="planday" data-i="${i}">${d.name}</button>`).join("")}</div>
+    <table class="ptable"><thead><tr><th></th>${[1,2,3,4].map(x =>
+      `<th class="${x===w?"now":""}">W${x}</th>`).join("")}</tr></thead>
+      <tbody>${list.map(id => `<tr><td class="pname">${esc(EX[id].name)}</td>${[1,2,3,4].map(x =>
+        `<td class="${x===w?"now":""}">${WEEKS[x-1].sets}\u00d7${EX[id].hold?targetFor(id,x)+"s":targetFor(id,x)}</td>`).join("")}</tr>`).join("")}</tbody></table>
+    <ul class="planwhy">${WEEKS.map((x,i) =>
+      `<li class="${i+1===w?"on":""}"><span class="mono">W${i+1}</span>${esc(x.note)}</li>`).join("")}</ul>
+  </div>
+  <div class="sect" style="border-top:1px solid var(--line)">
+    <span class="mono muted">PREVIEW</span>
+    <div class="swap"><button class="chip${ui.preview?" on":""}" data-act="preview">${ui.preview?"showing week 4":"show week 4 variations"}</button></div>
+    <p class="hint">Swaps the drawings and cues on every card to their week-4 version so you can try them early. Changes nothing you've logged.</p>
+  </div>`;
+}
+
+function nextHTML(){
+  return `<div class="sect"><span class="mono muted">NEXT UP</span>
+    <div class="swap">${DAYS.map((d,i) =>
+      `<button class="chip${i===S.cycle?" on":""}" data-k="${d.key}" data-act="setcycle" data-i="${i}">${d.name}</button>`).join("")}</div>
+    <p class="hint">Realigns the rotation if it drifts. Clears today's ticked sets, leaves your history and session count alone.</p></div>`;
+}
+
+function backupHTML(){
+  return `<div class="sect">
+    <p>Your whole log as JSON. Copy it somewhere safe, or paste a saved one in and restore. Unknown exercises and missing fields are handled, so files from older versions still load.</p>
+    <textarea class="ta" id="ta" rows="9" spellcheck="false">${esc(ui.draft)}</textarea>
+    <div class="io">
+      <button data-act="copy">copy</button>
+      <button data-act="download">download file</button>
+      <button data-act="restore">restore from text</button>
+      <button data-act="loadfile">load a file</button>
+    </div>
+    ${ui.msg ? `<p class="io-msg">${esc(ui.msg)}</p>` : ""}</div>`;
+}
+
+function installHTML(){
+  const standalone = (typeof window.matchMedia === "function" && window.matchMedia("(display-mode: standalone)").matches)
+    || window.navigator.standalone === true;
+  if(standalone) return "";
+  const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  return `<div class="install">${ios
+    ? "Install it: tap Share, then \u201cAdd to Home Screen\u201d. That also stops Safari clearing your log after a week of not opening it."
+    : "Install it from your browser menu (\u201cInstall app\u201d or \u201cAdd to Home screen\u201d) to launch it fullscreen and keep it offline."}</div>`;
+}
+
+/* ================= actions ================= */
+
+function bump(id, idx, auto){
+  const cur = S.progress[id]||0, max = unitsFor(id, Wk().sets);
+  let next;
+  if(auto) next = Math.min(max, cur+1);
+  else if(halves(id)){ const lo = idx*2; next = cur <= lo ? lo+1 : cur === lo+1 ? lo+2 : lo; }
+  else next = cur === idx+1 ? idx : idx+1;
+  S.progress[id] = next; S.progressDate = today();
+  save(); render();
+}
+
+function stopTimer(){
+  if(ui.tick) clearInterval(ui.tick);
+  ui.tick = null; ui.timer = null;
+}
+
+function startTimer(id, t){
+  stopTimer();
+  ui.timer = {id, left:t};
+  ui.tick = setInterval(() => {
+    if(!ui.timer) return stopTimer();
+    ui.timer.left--;
+    if(ui.timer.left <= 0){ const x = ui.timer.id; stopTimer(); bump(x, null, true); return; }
+    const btn = document.querySelector('.timer[data-id="'+id+'"]');
+    if(btn) btn.textContent = ui.timer.left + "s — stop";
+  }, 1000);
+  render();
+}
+
+function finishDay(){
+  const d = today();
+  if(S.log.includes(d) && !confirm("Today is already logged. Log a second session anyway?\n\nThis advances the rotation and your session count again — only do this if you genuinely trained twice.")) return;
+  if(!S.log.includes(d)) S.log = S.log.concat([d]).sort();
+  S.logDetail[d] = day().key;
+  S.sessions++; S.cycle = (S.cycle+1)%3; S.progress = {}; S.progressDate = d;
+  stopTimer(); save(); render();
+}
+
+function cycleCell(iso){
+  const order = DAYS.map(d => d.key);
+  if(!S.log.includes(iso)){ S.log = S.log.concat([iso]).sort(); S.logDetail[iso] = order[0]; }
+  else {
+    const i = order.indexOf(S.logDetail[iso]);
+    if(i === -1) S.logDetail[iso] = order[0];
+    else if(i < order.length-1) S.logDetail[iso] = order[i+1];
+    else { S.log = S.log.filter(d => d !== iso); delete S.logDetail[iso]; }
+  }
+  const last = S.log.length ? S.log[S.log.length-1] : null;
+  const li = last ? order.indexOf(S.logDetail[last]) : -1;
+  const c = li === -1 ? S.cycle : (li+1)%3;
+  if(c !== S.cycle) S.progress = {};
+  S.cycle = c;
+  S.sessions = Math.max(0, S.log.length - (S.logBase||0));
+  save(); render();
+}
+
+function restore(text){
+  let v;
+  try{ v = JSON.parse(text); }
+  catch(e){ ui.msg = "That isn't valid JSON. Nothing changed."; renderSheet(); return; }
+  const clean = sanitize(v, S.level);
+  if(!clean){ ui.msg = "That doesn't look like a strength log. Nothing changed."; renderSheet(); return; }
+  S = clean; save(); render();
+  ui.msg = `Restored — ${S.sessions} sessions, ${S.log.length} days logged.`;
+  renderSheet();
+}
+
+/* ================= events ================= */
+
+document.addEventListener("click", ev => {
+  const el = ev.target.closest("[data-act]");
+  if(!el) return;
+  const a = el.dataset.act;
+
+  if(a === "menu"){ openSheet(null); return; }
+  if(a === "sheet-close"){ closeSheet(); return; }
+  if(a === "sheet-back"){ ui.panel = null; renderSheet(); return; }
+  if(a === "open"){
+    const p = el.dataset.panel;
+    if(p === "dates"){
+      ui.editGrid = true; closeSheet(); render();
+      const g = document.getElementById("grid");
+      if(g && g.scrollIntoView) g.scrollIntoView({block:"center", behavior:"smooth"});
+      return;
+    }
+    openSheet(p); return;
+  }
+  if(a === "level"){ S.level = +el.dataset.i; save(); closeSheet(); render(); return; }
+  if(a === "dot"){ bump(el.dataset.id, +el.dataset.i, false); return; }
+  if(a === "timer"){
+    const id = el.dataset.id;
+    if(ui.timer && ui.timer.id === id){ stopTimer(); render(); }
+    else startTimer(id, +el.dataset.t);
+    return;
+  }
+  if(a === "slot"){ S.choices[el.dataset.slot] = el.dataset.pick; save(); render(); return; }
+  if(a === "finish"){ finishDay(); return; }
+  if(a === "toggle-edit"){ ui.editGrid = !ui.editGrid; render(); return; }
+  if(a === "cell"){ cycleCell(el.dataset.iso); return; }
+  if(a === "planday"){ ui.planDay = +el.dataset.i; renderSheet(); return; }
+  if(a === "preview"){ ui.preview = !ui.preview; renderSheet(); render(); return; }
+  if(a === "preview-off"){ ui.preview = false; render(); return; }
+  if(a === "setcycle"){ S.cycle = +el.dataset.i; S.progress = {}; save(); renderSheet(); render(); return; }
+  if(a === "restart"){
+    if(!confirm("Restart at week 1 with a fresh level? Your logged days are kept.")) return;
+    S.sessions = 0; S.logBase = S.log.length; S.cycle = 0; S.progress = {}; S.level = null;
+    save(); render(); return;
+  }
+  if(a === "do-reset"){
+    if(!confirm("Clear all sessions and history? This cannot be undone.")) return;
+    S.cycle = 0; S.sessions = 0; S.logBase = 0; S.log = []; S.logDetail = {}; S.progress = {};
+    save(); closeSheet(); render(); return;
+  }
+  if(a === "copy"){
+    const ta = document.getElementById("ta");
+    ui.draft = ta.value;
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(ui.draft)
+        .then(() => { ui.msg = "Copied. Paste it into a note or a file somewhere safe."; renderSheet(); })
+        .catch(() => { ta.focus(); ta.select(); ui.msg = "Clipboard blocked — the text is selected, press Ctrl+C (Cmd+C on Mac)."; renderSheet(); });
+    } else { ta.focus(); ta.select(); ui.msg = "The text is selected — press Ctrl+C (Cmd+C on Mac)."; renderSheet(); }
+    return;
+  }
+  if(a === "download"){
+    ui.draft = document.getElementById("ta").value;
+    try{
+      const url = URL.createObjectURL(new Blob([ui.draft], {type:"application/json"}));
+      const link = document.createElement("a");
+      link.href = url; link.download = "strength-log-" + today() + ".json";
+      document.body.appendChild(link); link.click(); link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      ui.msg = "File saved. If nothing appeared, use Copy instead.";
+    }catch(e){ ui.msg = "Download failed here — use Copy instead."; }
+    renderSheet(); return;
+  }
+  if(a === "restore"){ restore(document.getElementById("ta").value); return; }
+  if(a === "loadfile"){ document.getElementById("fileinput").click(); return; }
+});
+
+document.addEventListener("input", ev => {
+  if(ev.target.id === "ta") ui.draft = ev.target.value;
+});
+
+document.addEventListener("keydown", ev => {
+  if(ev.key === "Escape" && !sheet.hidden) closeSheet();
+});
+
+document.getElementById("fileinput").addEventListener("change", ev => {
+  const f = ev.target.files && ev.target.files[0];
+  if(!f) return;
+  const r = new FileReader();
+  r.onload = () => { ui.draft = String(r.result); restore(ui.draft); };
+  r.onerror = () => { ui.msg = "That file couldn't be read. Try pasting the text instead."; renderSheet(); };
+  r.readAsText(f);
+  ev.target.value = "";
+});
+
+window.addEventListener("beforeinstallprompt", e => { ui.deferredPrompt = e; });
+
+/* ================= boot ================= */
+
+load();
+render();
+
+if("serviceWorker" in navigator){
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("sw.js").catch(() => {});
+  });
+}
+</script>
+</body>
+</html>
