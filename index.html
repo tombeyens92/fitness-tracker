@@ -58,25 +58,53 @@ h1,h2,h3,p,ul{margin:0;}
 
 /* ---- dial ---- */
 .dial-block{display:flex;gap:20px;align-items:center;margin-bottom:18px;flex-wrap:wrap;}
-.dial{width:126px;height:126px;flex:none;}
-.ring{fill:none;stroke-width:7;}
-.ring.off{stroke:var(--line);}
-.ring.on[data-k="push"]{stroke:var(--push);}
-.ring.on[data-k="core"]{stroke:var(--core);}
-.ring.on[data-k="legs"]{stroke:var(--legs);}
-.dial-letter{font-family:var(--disp);font-size:52px;fill:var(--chalk);text-anchor:middle;}
+.dial{flex:none;display:block;}
+.wedge{opacity:.34;transform-origin:256px 256px;transform-box:view-box;
+  transition:opacity .18s ease, transform .18s cubic-bezier(.2,.8,.3,1);}
+.wedge-fill{stroke:none;}
+.wedge[data-k="push"] .wedge-fill{fill:var(--push);}
+.wedge[data-k="core"] .wedge-fill{fill:var(--core);}
+.wedge[data-k="legs"] .wedge-fill{fill:var(--legs);}
+.wedge[aria-checked="true"]{opacity:1;}
+.wedge[aria-checked="true"][data-k="push"]{transform:translate(13.9px,-8px);}
+.wedge[aria-checked="true"][data-k="core"]{transform:translate(0,16px);}
+.wedge[aria-checked="true"][data-k="legs"]{transform:translate(-13.9px,-8px);}
+@media (hover:hover){
+  .wedge[role="radio"][aria-checked="false"]{cursor:pointer;}
+  .wedge[role="radio"][aria-checked="false"]:hover{opacity:.62;}
+}
+.wedge-focus{fill:none;stroke:transparent;stroke-width:12;pointer-events:none;}
+.wedge:focus{outline:none;}
+.wedge:focus-visible .wedge-focus{stroke:var(--chalk);}
+@media (prefers-reduced-motion:reduce){
+  .wedge{transition:opacity .18s ease;}
+  .wedge[aria-checked="true"]{transform:none;}
+}
 .legend{flex:1;min-width:180px;}
-.h2{font-family:var(--disp);font-size:30px;text-transform:uppercase;letter-spacing:.02em;
-  margin-bottom:12px;color:var(--acc);}
-.legend ul{list-style:none;padding:0;display:flex;flex-direction:column;gap:6px;}
-.legend li{display:flex;align-items:center;gap:9px;color:var(--muted);}
+.legend ul{list-style:none;padding:0;display:flex;flex-direction:column;gap:2px;}
+.legend li{color:var(--muted);}
 .legend li.on{color:var(--chalk);}
+.legrow{display:flex;align-items:center;gap:9px;width:100%;text-align:left;color:inherit;
+  padding:4px 6px;margin-left:-6px;border-radius:2px;transition:background .15s,color .15s;}
+.legrow:hover{background:var(--surface);color:var(--chalk);}
+.legend li.on .legrow{cursor:default;}
+.legend li.on .legrow:hover{background:transparent;}
 .legend .when{margin-left:auto;font-size:10.5px;}
 .pip{width:7px;height:7px;border-radius:50%;background:var(--line);flex:none;}
 .pip[data-k="push"]{background:var(--push);}
 .pip[data-k="core"]{background:var(--core);}
 .pip[data-k="legs"]{background:var(--legs);}
 .legend li:not(.on) .pip{background:var(--line);}
+.legend li:not(.on) .legrow:hover .pip{background:var(--muted);}
+
+/* ---- muscle toggle ---- */
+.bodytoggle{flex:none;display:flex;flex-direction:column;align-items:center;gap:5px;
+  padding:8px 10px;border:1px solid var(--line);border-radius:2px;color:var(--muted);
+  transition:border-color .2s,color .2s;}
+.bodytoggle:hover{border-color:var(--muted);color:var(--chalk);}
+.bodytoggle[aria-expanded="true"]{border-color:var(--acc);color:var(--acc);}
+.bodytoggle .mini-body{height:64px;width:auto;display:block;pointer-events:none;}
+.bodytoggle .mono{font-size:9.5px;letter-spacing:.12em;}
 
 /* ---- muscle map ---- */
 .bodymap{display:flex;gap:16px;align-items:center;flex-wrap:wrap;
@@ -91,7 +119,6 @@ h1,h2,h3,p,ul{margin:0;}
 /* ---- banners ---- */
 .pvbanner{display:flex;justify-content:space-between;align-items:center;gap:12px;
   border:1px dashed var(--acc);border-radius:2px;padding:9px 12px;margin-bottom:16px;color:var(--acc);}
-.weeknote{border-left:2px solid var(--acc);padding:2px 0 2px 13px;color:var(--muted);margin-bottom:22px;}
 
 /* ---- cards ---- */
 .list{display:flex;flex-direction:column;gap:12px;}
@@ -110,14 +137,15 @@ h1,h2,h3,p,ul{margin:0;}
 .cue{color:var(--muted);font-size:13.5px;margin-top:5px;}
 .harder{color:var(--acc);margin-top:6px;text-transform:none;letter-spacing:.02em;}
 .controls{display:flex;align-items:center;gap:12px;margin-top:11px;flex-wrap:wrap;}
+.controls > .timer, .controls > .setdone{margin-left:auto;}
 .dots{display:flex;gap:7px;}
 .dot{width:30px;height:30px;border:2px solid var(--muted);border-radius:50%;background:transparent;}
 .dot:hover{border-color:var(--chalk);}
 .dot.half{background:linear-gradient(90deg,var(--acc) 0 50%,transparent 50% 100%);border-color:var(--acc);}
 .dot.filled{background:var(--acc);border-color:var(--acc);}
-.timer{border:1px solid var(--muted);border-radius:2px;padding:7px 12px;color:var(--chalk);
+.timer, .setdone{border:1px solid var(--muted);border-radius:2px;padding:7px 12px;color:var(--chalk);
   font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;}
-.timer:hover{border-color:var(--acc);color:var(--acc);}
+.timer:hover, .setdone:hover{border-color:var(--acc);color:var(--acc);}
 .timer.running{border-color:var(--acc);color:var(--acc);}
 .swap{display:flex;gap:7px;margin-top:8px;flex-wrap:wrap;}
 .chip{border:1px solid var(--line);border-radius:2px;padding:5px 10px;color:var(--muted);
@@ -199,6 +227,11 @@ footer strong{color:var(--chalk);font-weight:600;}
 .install{margin-top:20px;border:1px dashed var(--acc);border-radius:2px;padding:12px;color:var(--acc);
   font-size:12.5px;line-height:1.5;}
 
+@media (max-width:500px){
+  .legend{min-width:0;flex-basis:calc(100% - 146px);}
+  .bodytoggle{flex-basis:100%;flex-direction:row;gap:10px;justify-content:center;padding:6px 10px;}
+  .bodytoggle .mini-body{height:34px;}
+}
 @media (max-width:400px){
   .h1{font-size:42px;}
   .card{flex-direction:column;}
@@ -265,7 +298,7 @@ const LEVEL_HINT = ["under 10 pushups / 30s plank","10\u201325 pushups / 30\u201
 const KEY = "strength:v1";
 const SLOTS = DAYS.flatMap(d => d.ex.filter(Array.isArray));
 const known = id => Object.prototype.hasOwnProperty.call(EX, id);
-const halves = id => !!(EX[id] && EX[id].hold && EX[id].side);
+const halves = id => !!(EX[id] && EX[id].side);
 const unitsFor = (id, sets) => halves(id) ? sets*2 : sets;
 const today = () => { const d=new Date(); return new Date(d.getTime()-d.getTimezoneOffset()*6e4).toISOString().slice(0,10); };
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -322,16 +355,25 @@ const SIL = `<g fill="none" stroke="var(--line)" stroke-width="1.5">
   <rect x="47" y="25" width="9" height="45" rx="4.5"/><rect x="21" y="76" width="10" height="50" rx="5"/>
   <rect x="33" y="76" width="10" height="50" rx="5"/></g>`;
 
-function body(view, active){
-  const parts = view === "front"
-    ? mg("push",active, el(12.5,30,4.5,6)+el(51.5,30,4.5,6)+rr(21.5,26,10,12,3.5)+rr(32.5,26,10,12,3.5))
+function bodyInner(view, active){
+  return view === "front"
+    ? SIL
+    + mg("push",active, el(12.5,30,4.5,6)+el(51.5,30,4.5,6)+rr(21.5,26,10,12,3.5)+rr(32.5,26,10,12,3.5))
     + mg("legs",active, rr(9,39,7,14,3.5)+rr(48,39,7,14,3.5)+rr(22,79,8,25,4)+rr(34,79,8,25,4))
     + mg("core",active, rr(27,41,10,21,3)+rr(21.5,43,4.5,18,2.2)+rr(38,43,4.5,18,2.2))
-    : mg("push",active, el(12.5,30,4.5,6)+el(51.5,30,4.5,6)+rr(9,39,7,15,3.5)+rr(48,39,7,15,3.5))
+    : SIL
+    + mg("push",active, el(12.5,30,4.5,6)+el(51.5,30,4.5,6)+rr(9,39,7,15,3.5)+rr(48,39,7,15,3.5))
     + mg("legs",active, rr(25,24,14,10,3)+rr(21.5,36,9,18,3)+rr(33.5,36,9,18,3)+rr(22,68,9,10,3)+rr(33,68,9,10,3)+rr(22,80,8,22,4)+rr(34,80,8,22,4)+rr(23,106,6.5,16,3.2)+rr(34.5,106,6.5,16,3.2))
     + mg("core",active, rr(27,56,10,11,3));
+}
+
+function body(view, active){
   return `<svg viewBox="0 0 64 142" class="body-svg" role="img" aria-label="${view} muscle map">
-    ${SIL}${parts}<text x="32" y="138" class="body-label">${view==="front"?"FRONT":"BACK"}</text></svg>`;
+    ${bodyInner(view, active)}<text x="32" y="138" class="body-label">${view==="front"?"FRONT":"BACK"}</text></svg>`;
+}
+
+function miniBody(active){
+  return `<svg viewBox="0 0 64 128" class="body-svg mini-body" aria-hidden="true">${bodyInner("front", active)}</svg>`;
 }
 
 /* ================= state ================= */
@@ -381,7 +423,8 @@ function sanitize(v, fallbackLevel){
 }
 
 let S = defaults();
-const ui = {panel:null, planDay:null, preview:false, editGrid:false, timer:null, tick:null, draft:"", msg:"", deferredPrompt:null};
+const ui = {panel:null, planDay:null, preview:false, editGrid:false, timer:null, tick:null, draft:"", msg:"", deferredPrompt:null,
+  focusDial:false, bodyOpen:false};
 
 function load(){
   try{
@@ -423,29 +466,33 @@ function render(){
   <section class="dial-block">
     ${dial(d)}
     <div class="legend">
-      <h2 class="h2">${esc(d.name)}</h2>
       <ul>${[0,1,2].map(o => {
-        const x = DAYS[(S.cycle+o)%3];
-        return `<li class="${o===0?"on":""}"><i class="pip" data-k="${o===0?x.key:""}"></i>
+        const idx = (S.cycle+o)%3, x = DAYS[idx];
+        return `<li class="${o===0?"on":""}"><button class="legrow" data-act="setcycle" data-i="${idx}"
+          aria-current="${o===0}"><i class="pip" data-k="${x.key}"></i>
           <span class="mono">${esc(x.name)}</span>
-          <span class="mono when">${o===0?"today":o===1?"tomorrow":"in 2 days"}</span></li>`;
+          <span class="mono when">${o===0?"today":o===1?"tomorrow":"in 2 days"}</span></button></li>`;
       }).join("")}</ul>
     </div>
+    <button class="bodytoggle" data-act="togglebody" aria-expanded="${ui.bodyOpen}"
+      aria-label="${ui.bodyOpen?"Hide":"Show"} muscle detail">
+      ${miniBody(d.key)}
+      <span class="mono">${ui.bodyOpen?"close":"muscles"}</span>
+    </button>
   </section>
 
-  <section class="bodymap">
+  ${ui.bodyOpen ? `<section class="bodymap">
     <div class="bodies">${body("front",d.key)}${body("back",d.key)}</div>
     <div class="bodycap">
       <p class="mono lit">TODAY \u00b7 ${esc(d.focus)}</p>
-      <p class="capnote">The faded muscles are the other two days, still recovering. Nothing lights up twice in a row \u2014 that's the whole point of the rotation.</p>
+      <p class="capnote">${esc(W.note)}</p>
     </div>
-  </section>
+  </section>` : ""}
 
   ${ui.preview && week() !== 4 ? `<div class="pvbanner">
     <span class="mono">WEEK 4 PREVIEW \u2014 targets are still week ${week()}</span>
     <button class="ghost mono" data-act="preview-off">exit</button></div>` : ""}
 
-  <p class="weeknote">${esc(W.note)}</p>
   <div class="list" id="cards">${cardsHTML()}</div>
 
   <button class="finish ${logged?"logged":allDone()?"ready":""}" data-act="finish">
@@ -470,16 +517,62 @@ function render(){
     <p>Stop every set about <strong>2 reps before failure</strong>. Going to failure daily is what breaks the streak.</p>
     <p>Feeling beaten up? Swap a day for a walk or stretching. That's part of the plan, not a miss.</p>
   </footer>`;
+
+  if(ui.focusDial){
+    ui.focusDial = false;
+    const w = document.querySelector('.wedge[aria-checked="true"]');
+    if(w && w.focus) w.focus();
+  }
 }
 
-function dial(d){
-  const arc = i => {
-    const a1 = (-90+i*120+5)*Math.PI/180, a2 = (-90+i*120+115)*Math.PI/180, r = 47;
-    return `M ${60+r*Math.cos(a1)} ${60+r*Math.sin(a1)} A ${r} ${r} 0 0 1 ${60+r*Math.cos(a2)} ${60+r*Math.sin(a2)}`;
-  };
-  return `<svg viewBox="0 0 120 120" class="dial" aria-hidden="true">
-    ${[0,1,2].map(i => `<path d="${arc(i)}" class="ring ${i===S.cycle?"on":"off"}" data-k="${DAYS[i].key}"/>`).join("")}
-    <text x="60" y="70" class="dial-letter">${d.id}</text></svg>`;
+/* Three-segment donut icon. Paths and geometry come from segment-icon-prompt.md
+   (viewBox 512, outer r=230, inner r=141, 13° gaps). Colors are fixed by
+   position (amber/teal/purple); labels are supplied by the caller. */
+const SEGMENT_PATHS = [
+  "M466.9 347.7A230 230 0 0 0 282.0 27.5L272.0 115.9A141 141 0 0 1 385.3 312.2Z",
+  "M71.1 392.8A230 230 0 0 0 440.9 392.8L369.3 339.9A141 141 0 0 1 142.7 339.9Z",
+  "M230.0 27.5A230 230 0 0 0 45.1 347.7L126.7 312.2A141 141 0 0 1 240.0 115.9Z"
+];
+let _segIconWarned = false;
+
+function segmentIcon(opts){
+  const size = opts.size || 230;
+  const label = opts.label || "Segment icon";
+  const wantInteractive = opts.interactive !== false;
+  const canInteract = wantInteractive && size >= 88;
+  if(wantInteractive && !canInteract && !_segIconWarned){
+    _segIconWarned = true;
+    if(typeof console !== "undefined" && console.warn){
+      console.warn("segmentIcon: size " + size + "px < 88px — forcing non-interactive to keep tap targets ≥ 44px");
+    }
+  }
+  const parts = opts.segments.map((s, i) => {
+    const active = i === opts.value;
+    const path = SEGMENT_PATHS[i];
+    const attrs = canInteract
+      ? `role="radio" aria-checked="${active}" aria-label="${esc(s.label)}" tabindex="${active?0:-1}"`
+        + (active ? "" : ` data-act="${opts.action||"segment"}" data-i="${i}"`)
+      : `aria-hidden="true"`;
+    return `<g class="wedge" data-k="${s.key}" ${attrs}>
+      <path class="wedge-fill" d="${path}"/>
+      <path class="wedge-focus" d="${path}"/>
+    </g>`;
+  }).join("");
+  const svgRole = canInteract
+    ? `role="radiogroup" aria-label="${esc(label)}"`
+    : `role="img" aria-label="${esc(label)}"`;
+  return `<svg viewBox="0 0 512 512" class="dial" width="${size}" height="${size}" ${svgRole}>${parts}</svg>`;
+}
+
+function dial(){
+  return segmentIcon({
+    value: S.cycle,
+    segments: DAYS.map(x => ({key:x.key, label:x.name})),
+    size: 126,
+    interactive: true,
+    action: "setcycle",
+    label: "Rotation day"
+  });
 }
 
 function cardsHTML(){
@@ -496,6 +589,8 @@ function cardsHTML(){
     const running = ui.timer && ui.timer.id === id;
     const tlabel = running ? ui.timer.left + "s \u2014 stop"
       : halves(id) ? `start ${t}s \u00b7 ${done%2===0?"1st side":"2nd side"}` : `start ${t}s`;
+    const dlabel = halves(id) ? `${done%2===0?"1st":"2nd"} side done` : "mark set done";
+    const showSetDone = !e.hold && done < max;
     return `<article class="card${done>=max?" done":""}">
       <div class="figbox">${(hard && HARD_FIGS[id]) || FIGS[id]}</div>
       <div class="cardbody">
@@ -509,6 +604,7 @@ function cardsHTML(){
         <div class="controls">
           <div class="dots" role="group" aria-label="Sets for ${esc(e.name)}">${dots}</div>
           ${e.hold ? `<button class="timer${running?" running":""}" data-act="timer" data-id="${id}" data-t="${t}">${tlabel}</button>` : ""}
+          ${showSetDone ? `<button class="setdone" data-act="setdone" data-id="${id}">${dlabel}</button>` : ""}
         </div>
       </div></article>`;
   }).join("");
@@ -748,13 +844,19 @@ document.addEventListener("click", ev => {
     return;
   }
   if(a === "slot"){ S.choices[el.dataset.slot] = el.dataset.pick; save(); render(); return; }
+  if(a === "setdone"){ bump(el.dataset.id, null, true); return; }
+  if(a === "togglebody"){ ui.bodyOpen = !ui.bodyOpen; render(); return; }
   if(a === "finish"){ finishDay(); return; }
   if(a === "toggle-edit"){ ui.editGrid = !ui.editGrid; render(); return; }
   if(a === "cell"){ cycleCell(el.dataset.iso); return; }
   if(a === "planday"){ ui.planDay = +el.dataset.i; renderSheet(); return; }
   if(a === "preview"){ ui.preview = !ui.preview; renderSheet(); render(); return; }
   if(a === "preview-off"){ ui.preview = false; render(); return; }
-  if(a === "setcycle"){ S.cycle = +el.dataset.i; S.progress = {}; save(); renderSheet(); render(); return; }
+  if(a === "setcycle"){
+    const i = +el.dataset.i;
+    if(i === S.cycle) return;
+    S.cycle = i; S.progress = {}; save(); renderSheet(); render(); return;
+  }
   if(a === "restart"){
     if(!confirm("Restart at week 1 with a fresh level? Your logged days are kept.")) return;
     S.sessions = 0; S.logBase = S.log.length; S.cycle = 0; S.progress = {}; S.level = null;
@@ -796,7 +898,21 @@ document.addEventListener("input", ev => {
 });
 
 document.addEventListener("keydown", ev => {
-  if(ev.key === "Escape" && !sheet.hidden) closeSheet();
+  if(ev.key === "Escape" && !sheet.hidden){ closeSheet(); return; }
+  const t = ev.target;
+  if(t && t.classList && t.classList.contains("wedge") && t.getAttribute("role") === "radio"){
+    const dir = (ev.key === "ArrowRight" || ev.key === "ArrowDown") ? 1
+      : (ev.key === "ArrowLeft" || ev.key === "ArrowUp") ? -1 : 0;
+    if(dir !== 0){
+      ev.preventDefault();
+      const n = (S.cycle + dir + DAYS.length) % DAYS.length;
+      if(n !== S.cycle){
+        S.cycle = n; S.progress = {}; ui.focusDial = true; save(); render();
+      }
+    } else if(ev.key === "Enter" || ev.key === " "){
+      ev.preventDefault();
+    }
+  }
 });
 
 document.getElementById("fileinput").addEventListener("change", ev => {
