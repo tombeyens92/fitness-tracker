@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-# fitness-tracker
-=======
 # Strength Rotation — PWA
 
 Standalone bodyweight tracker. No build step, no dependencies, no backend.
@@ -10,54 +7,40 @@ Standalone bodyweight tracker. No build step, no dependencies, no backend.
     index.html              the whole app (markup, CSS, JS)
     manifest.webmanifest    PWA metadata
     sw.js                   service worker (offline shell cache)
-    icon-192.png            \
-    icon-512.png             |  home-screen icons
-    icon-maskable-512.png    |
-    apple-touch-icon.png    /
+    icon-*.png              home-screen icons
+    CLAUDE.md               design invariants — read before changing anything
 
 ## Hosting
 
-Any static host works. It must be served over **https** (or localhost) —
-service workers and install prompts are refused on plain http.
+Static host over **https** (or localhost) — service workers and install
+prompts are refused on plain http. Live at
+`https://tombeyens92.github.io/fitness-tracker/`.
 
-    # GitHub Pages
-    push these files to a repo, Settings → Pages → deploy from branch
-
-    # Netlify / Cloudflare Pages
-    drag the folder onto the dashboard
-
-    # local test
-    python3 -m http.server 8000     # then open http://localhost:8000
-
-Serve from the directory root, or from a subpath — every reference is
-relative, so `/tracker/` works as well as `/`.
+Local test: `python3 -m http.server 8000`
 
 ## Installing
 
-- **iOS** — open in Safari, Share → Add to Home Screen. Do this rather than
+- **iOS** — Safari → Share → Add to Home Screen. Do this rather than
   bookmarking: Safari evicts localStorage for sites unopened for ~7 days,
   but home-screen apps are exempt.
 - **Android / desktop Chrome** — browser menu → Install app.
 
 ## Data
 
-Everything lives in `localStorage` under the key `strength:v1`, on the device.
-There is no sync. Menu → Backup & restore copies the log out as JSON and
-pastes it back in; that is how you move between devices.
+One JSON blob in `localStorage` under `strength:v1`, per device. No sync.
+Menu → Backup & restore moves it between devices.
 
-The restore path is defensive: unknown exercise ids are dropped, missing
-fields fall back to defaults, bad dates are filtered, and a log with no
-colour data has it reconstructed from rotation order. Files from any earlier
-version load.
+`sanitize()` is the only way state enters the app. It is deliberately
+forgiving: unknown exercise ids dropped, missing fields defaulted, bad dates
+filtered, legacy field names migrated, and a log with no colour data has it
+reconstructed from rotation order. Any new state field must be handled there.
 
 ## Updating
 
-After editing any shell file, bump `CACHE` in `sw.js` (e.g. `strength-v2`).
-Otherwise the old cached copy keeps being served.
+**Bump `CACHE` in `sw.js` on every change to a shell file.** Otherwise the old
+cached copy keeps being served to installed devices.
 
 ## Adding an exercise
 
-`EX` holds the definitions, `DAYS` assigns them, `FIGS` and `HARD_FIGS` hold
-the drawings. An array inside a day's `ex` list is a variant slot — the user
-picks one, and the first entry is the slot's identity, so don't reorder it.
->>>>>>> 6b663eb (Strength rotation tracker)
+See CLAUDE.md. Short version: an `EX` entry with the right `pat`, plus a
+`FIGS` drawing. It appears in the builder automatically.

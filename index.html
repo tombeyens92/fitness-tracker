@@ -178,6 +178,17 @@ h1,h2,h3,p,ul{margin:0;}
 .hint{color:var(--muted);font-size:12.5px;margin-top:10px;line-height:1.5;}
 .hint em{font-style:normal;color:var(--chalk);}
 
+.patlabel{display:block;color:var(--muted);margin-top:6px;text-align:left;
+  text-decoration:underline;text-underline-offset:3px;font-size:10.5px;}
+.patlabel:hover{color:var(--acc);}
+.slotrow{padding:14px 0;border-bottom:1px solid var(--line);}
+.slotrow:last-child{border-bottom:none;}
+.slotrow>.mono{display:block;margin-bottom:8px;}
+.slotcue{color:var(--muted);font-size:12.5px;line-height:1.5;margin-top:9px;}
+.cooldown{margin-top:30px;border-top:1px solid var(--line);padding-top:18px;}
+.cooldown .card{margin-bottom:10px;}
+.card.stretch{border-style:dashed;opacity:.92;}
+.card.stretch .fig .body *{stroke:var(--muted);}
 .retest{margin-top:20px;border:1px solid var(--acc);border-radius:2px;padding:14px;}
 .retest p{margin-bottom:11px;font-size:13.5px;}
 footer{margin-top:30px;border-top:1px solid var(--line);padding-top:16px;color:var(--muted);font-size:13px;}
@@ -263,27 +274,75 @@ footer strong{color:var(--chalk);font-weight:600;}
 /* ================= data ================= */
 
 const EX = {
-  pushup:{name:"Pushups",base:[6,12,20],cue:"Elbows about 45\u00b0 from your ribs, not flared wide. Beginner: drop to knees.",harder:"Decline \u2014 feet up on a chair"},
-  pike_floor:{name:"Pike pushups \u00b7 floor",short:"Floor",base:[5,8,12],cue:"Hands on the floor, hips high, crown of your head toward the floor between your hands. Knees soft is fine.",harder:"Feet elevated on a step"},
-  pike_chair:{name:"Pike pushups \u00b7 chair",short:"Chair",base:[5,8,12],cue:"Hands on a chair seat. Hips high, head lowering between your hands. Bend the knees as much as you need.",harder:"Drop to the floor"},
-  pike_counter:{name:"Pike pushups \u00b7 counter",short:"Counter",base:[5,8,12],cue:"Hands on a kitchen counter, feet on the floor, hips high. The higher your hands, the less hamstring length you need.",harder:"Drop to a chair"},
-  dip:{name:"Chair dips",base:[6,10,15],cue:"Stay close to the bench. Shoulders down, never shrugged up to your ears.",harder:"Legs straight out in front"},
-  plank:{name:"Plank",hold:true,base:[20,40,60],cue:"Squeeze your glutes and tuck the ribs down. A sagging plank trains nothing.",harder:"Lift one foot, alternate every 5s"},
-  sideplank:{name:"Side plank",hold:true,side:true,base:[15,25,40],cue:"Stack the hips and drive the bottom hip up toward the ceiling.",harder:"Top leg raised"},
-  deadbug:{name:"Dead bug",side:true,base:[8,10,12],cue:"Lower back stays glued to the floor. Slow beats far \u2014 stop where it lifts.",harder:"Hold a book in the moving hand"},
-  hollow:{name:"Hollow hold",hold:true,base:[15,25,40],cue:"Press the lower back into the floor. If it lifts, raise the legs higher.",harder:"Arms fully overhead"},
-  squat:{name:"Squats",base:[10,18,25],cue:"Knees track over your toes, weight through the midfoot.",harder:"3-second lower, or single-leg to a chair"},
-  lunge:{name:"Lunges",side:true,base:[6,10,14],cue:"Back knee kisses the floor, front shin stays close to vertical.",harder:"Rear foot elevated on a chair"},
-  bridge:{name:"Glute bridge",base:[12,15,20],cue:"Drive through the heels, ribs down \u2014 squeeze glutes, don't arch the back.",harder:"One leg at a time"},
-  row:{name:"Inverted rows",short:"Table row",base:[6,10,14],cue:"Under a sturdy table. Pull chest to the edge, shoulder blades back and down.",harder:"Feet up on a chair"},
-  ytw:{name:"Y-T-W raises",short:"Y-T-W",base:[6,8,10],cue:"Face down, forehead on the floor. Lift the arms a few cm and hold each shape \u2014 Y, then T, then W. That's one rep.",harder:"Pause 3 seconds in each shape"}
+  // horizontal push
+  pushup:{name:"Pushups",pat:"hpush",base:[6,12,20],cue:"Elbows about 45\u00b0 from your ribs, not flared wide.",harder:"Decline \u2014 feet up on a chair"},
+  kneepushup:{name:"Knee pushups",pat:"hpush",base:[8,15,25],cue:"Knees down, hips in line with your shoulders \u2014 don't let them sag or pike up.",harder:"Move to full pushups"},
+  wallpushup:{name:"Wall pushups",pat:"hpush",base:[10,18,25],cue:"Hands on a wall, feet back a step. The further back your feet, the harder it gets.",harder:"Move to knee pushups"},
+  closegrip:{name:"Close-grip pushups",pat:"hpush",base:[5,10,16],cue:"Hands under your chest, elbows brushing your ribs. Much more triceps.",harder:"Decline close-grip"},
+  // vertical push
+  pike_floor:{name:"Pike pushups \u00b7 floor",short:"Pike floor",pat:"vpush",base:[5,8,12],cue:"Hands on the floor, hips high, crown of your head toward the floor between your hands. Knees soft is fine.",harder:"Feet elevated on a step"},
+  pike_chair:{name:"Pike pushups \u00b7 chair",short:"Pike chair",pat:"vpush",base:[5,8,12],cue:"Hands on a chair seat. Hips high, head lowering between your hands.",harder:"Drop to the floor"},
+  pike_counter:{name:"Pike pushups \u00b7 counter",short:"Pike counter",pat:"vpush",base:[5,8,12],cue:"Hands on a kitchen counter, feet on the floor, hips high. Least hamstring length needed.",harder:"Drop to a chair"},
+  // elbow extension
+  dip:{name:"Chair dips",pat:"ext",base:[6,10,15],cue:"Stay close to the bench. Shoulders down, never shrugged up to your ears.",harder:"Legs straight out in front"},
+  benchpress:{name:"Elevated pushups",short:"Elevated",pat:"ext",base:[8,14,22],cue:"Hands on a chair or step, body straight. Easier than the floor, kinder to the shoulders.",harder:"Lower the surface"},
+  // anti-extension core
+  plank:{name:"Plank",pat:"antiext",hold:true,base:[20,40,60],cue:"Squeeze your glutes and tuck the ribs down. A sagging plank trains nothing.",harder:"Lift one foot, alternate every 5s"},
+  hollow:{name:"Hollow hold",pat:"antiext",hold:true,base:[15,25,40],cue:"Press the lower back into the floor. If it lifts, raise the legs higher or bend the knees.",harder:"Arms fully overhead"},
+  birddog:{name:"Bird dog",pat:"antiext",side:true,base:[6,8,10],cue:"On all fours, extend opposite arm and leg, pause, return. Hips stay level \u2014 imagine balancing a glass on your lower back.",harder:"Pause 5 seconds at full extension"},
+  // anti-rotation core
+  deadbug:{name:"Dead bug",pat:"antirot",side:true,base:[8,10,12],cue:"Lower back stays glued to the floor. Alternate sides each rep. Slow beats far.",harder:"Hold a book in the moving hand"},
+  birddog2:{name:"Bird dog",short:"Bird dog",pat:"antirot",side:true,base:[6,8,10],cue:"On all fours, extend opposite arm and leg, pause, return. Hips stay level.",harder:"Pause 5 seconds at full extension"},
+  // anti-lateral flexion
+  sideplank:{name:"Side plank",pat:"antilat",hold:true,side:true,base:[15,25,40],cue:"Stack the hips and drive the bottom hip up toward the ceiling.",harder:"Top leg raised"},
+  suitcase:{name:"Suitcase hold",pat:"antilat",hold:true,side:true,base:[20,30,45],cue:"Stand tall holding something heavy in one hand. Resist leaning \u2014 shoulders stay level.",harder:"Heavier, or walk with it"},
+  // squat
+  squat:{name:"Squats",pat:"squat",base:[10,18,25],cue:"Knees track over your toes, weight through the midfoot.",harder:"3-second lower on every rep"},
+  splitsquat:{name:"Split squats",pat:"squat",side:true,base:[6,10,14],cue:"Feet split front and back, drop straight down. All reps one side, then swap \u2014 that is one set per side.",harder:"Rear foot elevated"},
+  slsquat:{name:"Single-leg squat to chair",short:"SL to chair",pat:"squat",side:true,base:[4,6,10],cue:"Sit back to a chair on one leg, stand up from it. Use hands on a doorframe if needed.",harder:"Lower chair, or no hands"},
+  // hinge
+  bridge:{name:"Glute bridge",pat:"hinge",base:[12,15,20],cue:"Drive through the heels, ribs down \u2014 squeeze glutes, don't arch the back.",harder:"One leg at a time",hardId:"slbridge"},
+  slbridge:{name:"Single-leg bridge",short:"SL bridge",pat:"hinge",side:true,base:[6,10,14],cue:"One foot planted, other knee hugged in. Hips stay level. All reps one side, then swap.",harder:"Foot on a low step"},
+  goodmorning:{name:"Good mornings",pat:"hinge",base:[10,15,20],cue:"Hands behind your head, soft knees, push the hips back and let the chest fold forward. Back stays flat, never rounded.",harder:"Hold a weight to your chest"},
+  sldl:{name:"Single-leg deadlift",short:"SL deadlift",pat:"hinge",side:true,base:[6,8,12],cue:"Hinge at one hip, back leg extends behind as a counterweight. Slow \u2014 this is a balance drill as much as a strength one.",harder:"Hold a weight in the opposite hand"},
+  // lunge
+  lunge:{name:"Lunges",pat:"lunge",side:true,base:[6,10,14],cue:"Back knee kisses the floor, front shin stays close to vertical. Alternate legs each rep.",harder:"Rear foot elevated",hardId:"splitsquat"},
+  revlunge:{name:"Reverse lunges",short:"Reverse",pat:"lunge",side:true,base:[6,10,14],cue:"Step backwards rather than forwards \u2014 kinder on the knees.",harder:"Front foot on a low step"},
+  // pull
+  row:{name:"Inverted rows",short:"Table row",pat:"pull",base:[6,10,14],cue:"Under a sturdy table. Pull chest to the edge, shoulder blades back and down.",harder:"Feet up on a chair"},
+  towelrow:{name:"Door towel rows",short:"Towel row",pat:"pull",base:[8,12,18],cue:"Towel round both door handles, feet either side of the door, lean back and pull. Walk your feet forward to make it harder.",harder:"Feet further forward"},
+  ytw:{name:"Y-T-W raises",short:"Y-T-W",pat:"pull",base:[6,8,10],cue:"Face down, forehead on the floor. Lift the arms a few cm and hold each shape \u2014 Y, then T, then W. That's one rep.",harder:"Pause 3 seconds in each shape"}
+};
+
+// Optional cooldown. Never counts toward finishing a day — static stretching
+// belongs after training, not before, and shouldn't compete with the sets.
+const STRETCH = {
+  hamstring:{name:"Seated hamstring fold",sec:40,cue:"Sit, one leg straight, fold forward from the hips with a flat back. Stop at mild tension, breathe. This is the one that unlocks pike pushups.",side:true},
+  couch:{name:"Couch stretch",sec:40,cue:"Rear foot up on a chair, kneeling on the other. Tuck the pelvis under until you feel the front of the hip.",side:true},
+  ninety:{name:"90/90 hip",sec:40,cue:"Both knees at right angles, front shin across you, rear leg out. Sit tall, lean gently over the front leg.",side:true},
+  figure4:{name:"Figure-4 glute",sec:40,cue:"On your back, ankle across the opposite knee, pull the thigh toward you.",side:true},
+  catcow:{name:"Cat-cow",sec:45,cue:"On all fours, alternate arching and rounding the spine slowly with your breath. Good after any back-heavy day."},
+  doorchest:{name:"Doorway chest",sec:40,cue:"Forearm on a doorframe, step through until you feel the chest open. Counters all the pushing.",side:true}
+};
+
+const PATTERNS = {
+  hpush:"Horizontal push", vpush:"Vertical push", ext:"Elbow extension",
+  antiext:"Anti-extension", antirot:"Anti-rotation", antilat:"Anti-lateral flexion",
+  squat:"Squat", hinge:"Hinge", lunge:"Lunge", pull:"Pull"
 };
 
 const DAYS = [
-  {id:"A",name:"Push",focus:"chest \u00b7 shoulders \u00b7 triceps",key:"push",ex:["pushup",["pike_floor","pike_chair","pike_counter"],"dip"]},
-  {id:"B",name:"Core",focus:"abs \u00b7 obliques \u00b7 stabilisers",key:"core",ex:["plank","sideplank","deadbug","hollow"]},
-  {id:"C",name:"Legs + Pull",focus:"quads \u00b7 glutes \u00b7 upper back",key:"legs",ex:["squat","lunge","bridge",["row","ytw"]]}
+  {id:"A",name:"Push",focus:"chest \u00b7 shoulders \u00b7 triceps",key:"push",slots:["hpush","vpush","ext"]},
+  {id:"B",name:"Core",focus:"abs \u00b7 obliques \u00b7 stabilisers",key:"core",slots:["antiext","antirot","antilat","antiext2"]},
+  {id:"C",name:"Legs + Pull",focus:"quads \u00b7 glutes \u00b7 upper back",key:"legs",slots:["squat","hinge","lunge","pull"]}
 ];
+
+// antiext2 is a second anti-extension slot so Core still holds four exercises;
+// it draws from the same pool but defaults to a different pick.
+const poolFor = p => Object.keys(EX).filter(id => EX[id].pat === (p === "antiext2" ? "antiext" : p));
+const DEFAULTS = {hpush:"pushup",vpush:"pike_floor",ext:"dip",antiext:"plank",antiext2:"hollow",
+  antirot:"deadbug",antilat:"sideplank",squat:"squat",hinge:"bridge",lunge:"lunge",pull:"row"};
+const ALL_SLOTS = DAYS.flatMap(d => d.slots);
 
 const WEEKS = [
   {sets:2,rep:0,hold:0,note:"Groove the movements. Half of what you could do."},
@@ -296,7 +355,6 @@ const LEVELS = ["Beginner","Intermediate","Advanced"];
 const LEVEL_HINT = ["under 10 pushups / 30s plank","10\u201325 pushups / 30\u201360s plank","25+ pushups / 60s+ plank"];
 
 const KEY = "strength:v1";
-const SLOTS = DAYS.flatMap(d => d.ex.filter(Array.isArray));
 const known = id => Object.prototype.hasOwnProperty.call(EX, id);
 const halves = id => !!(EX[id] && EX[id].side);
 const unitsFor = (id, sets) => halves(id) ? sets*2 : sets;
@@ -344,6 +402,46 @@ const HARD_FIGS = {
   row: fig("Inverted row, feet elevated", pl("12,14 88,14")+pl("6,44 24,44")+pl("20,44 20,54")+pl("14,42 44,40 66,38")+ci(74,36,5)+pl("66,38 68,15"))
 };
 
+
+Object.assign(FIGS, {
+  kneepushup: fig("Knee pushup", pl("18,50 34,48 56,38")+ci(66,34,5)+pl("56,38 58,50")),
+  wallpushup: fig("Wall pushup", pl("88,8 88,52")+pl("22,50 44,40 68,28")+ci(76,25,5)+pl("68,28 84,22")),
+  closegrip: fig("Close-grip pushup", pl("14,50 40,42 62,34")+ci(70,31,5)+pl("62,34 64,50")+pl("60,46 68,46")),
+  benchpress: fig("Elevated pushup", pl("58,32 92,32")+pl("88,32 88,54")+pl("14,52 42,44 68,34")+ci(76,31,5)+pl("68,34 72,33")),
+  birddog: fig("Bird dog", pl("30,48 30,32 54,32 54,48")+ci(62,29,5)+pl("54,32 74,22")+pl("30,32 12,24")),
+  birddog2: fig("Bird dog", pl("30,48 30,32 54,32 54,48")+ci(62,29,5)+pl("54,32 74,22")+pl("30,32 12,24")),
+  suitcase: fig("Suitcase hold", pl("50,52 50,20")+ci(50,13,5)+pl("50,22 38,40")+pl("50,22 62,40")+pl("58,40 68,40 68,50 58,50 58,40")),
+  splitsquat: fig("Split squat", pl("64,50 64,34 46,28")+pl("46,28 28,42 20,50")+pl("46,28 46,16")+ci(46,10,5)),
+  slsquat: fig("Single-leg squat to a chair", pl("8,34 30,34")+pl("26,34 26,54")+pl("34,50 54,38 36,32 32,20")+ci(30,13,5)+pl("36,32 62,30 70,36")),
+  slbridge: fig("Single-leg bridge", pl("66,50 66,32 44,32 24,44")+ci(17,46,5)+pl("24,46 34,51")+pl("44,32 74,20")),
+  goodmorning: fig("Good morning", pl("46,52 46,32 70,22")+ci(78,20,5)+pl("70,22 66,10")+pl("70,22 78,12")),
+  sldl: fig("Single-leg deadlift", pl("40,52 40,34 64,26")+ci(72,24,5)+pl("40,34 14,22")+pl("64,26 62,40")),
+  revlunge: fig("Reverse lunge", pl("34,50 34,32 54,26")+pl("54,26 72,42 82,50")+pl("54,26 54,15")+ci(54,9,5)),
+  towelrow: fig("Door towel row", pl("80,6 80,54")+pl("22,48 44,42 66,34")+ci(74,31,5)+pl("66,34 78,28"))
+});
+
+Object.assign(HARD_FIGS, {
+  kneepushup: FIGS.pushup,
+  wallpushup: FIGS.kneepushup,
+  pike_counter: FIGS.pike_chair,
+  benchpress: FIGS.dip,
+  birddog: fig("Bird dog, long pause", pl("30,48 30,32 54,32 54,48")+ci(62,29,5)+pl("54,32 78,18")+pl("30,32 8,20")),
+  birddog2: fig("Bird dog, long pause", pl("30,48 30,32 54,32 54,48")+ci(62,29,5)+pl("54,32 78,18")+pl("30,32 8,20")),
+  splitsquat: fig("Split squat, rear foot elevated", pl("8,36 28,36")+pl("24,36 24,54")+pl("64,50 64,34 46,28")+pl("46,28 30,38 16,34")+pl("46,28 46,16")+ci(46,10,5)),
+  slbridge: fig("Single-leg bridge, foot elevated", pl("58,36 82,36")+pl("78,36 78,54")+pl("66,36 66,30 44,30 24,44")+ci(17,46,5)+pl("44,30 74,18")),
+  revlunge: fig("Reverse lunge, front foot raised", pl("24,42 46,42")+pl("28,42 28,54")+pl("34,42 34,30 54,24")+pl("54,24 72,40 82,50")+pl("54,24 54,13")+ci(54,7,5)),
+  towelrow: fig("Door towel row, feet forward", pl("80,6 80,54")+pl("14,50 42,44 66,36")+ci(74,33,5)+pl("66,36 78,28"))
+});
+
+const SFIGS = {
+  hamstring: fig("Seated hamstring fold", pl("14,50 46,50")+pl("46,50 40,34")+pl("40,34 26,44")+ci(30,40,5)),
+  couch: fig("Couch stretch", pl("62,30 88,30")+pl("84,30 84,54")+pl("30,50 30,34 48,40 66,32")+ci(28,27,5)+pl("30,34 30,22")),
+  ninety: fig("90/90 hip", pl("18,50 46,50 46,38")+pl("46,50 74,50")+ci(42,28,5)+pl("44,34 46,50")),
+  figure4: fig("Figure-4 glute", pl("20,48 44,48")+ci(14,45,5)+pl("44,48 60,34 52,26")+pl("52,30 68,38")),
+  catcow: fig("Cat-cow", '<path d="M 28,34 Q 46,24 64,34"/>'+pl("28,34 28,50")+pl("64,34 64,50")+ci(72,32,5)),
+  doorchest: fig("Doorway chest stretch", pl("70,6 70,54")+pl("44,50 44,22")+ci(44,15,5)+pl("44,26 66,20"))
+};
+
 /* muscle map */
 const mg = (g, active, shapes) =>
   `<g fill="var(--${g})" fill-opacity="${g===active?1:0.17}">${shapes}</g>`;
@@ -379,9 +477,9 @@ function miniBody(active){
 /* ================= state ================= */
 
 function defaults(){
-  const choices = {};
-  SLOTS.forEach(o => { choices[o[0]] = o[0]; });
-  return {level:null,cycle:0,sessions:0,logBase:0,log:[],logDetail:{},choices,progress:{},progressDate:today()};
+  return {level:null,built:false,cycle:0,sessions:0,logBase:0,log:[],logDetail:{},
+    choices:Object.assign({},DEFAULTS),stretches:["hamstring","couch"],
+    progress:{},progressDate:today()};
 }
 
 function sanitize(v, fallbackLevel){
@@ -407,18 +505,26 @@ function sanitize(v, fallbackLevel){
       if(known(id) && typeof n === "number" && n >= 0) progress[id] = Math.min(6, Math.round(n));
     }
   }
+  // Choices are keyed by slot. Anything unrecognised falls back to the slot
+  // default, so files from any earlier version still load.
   const choices = {};
-  SLOTS.forEach(opts => {
-    const k = opts[0], picked = v.choices && v.choices[k];
-    if(opts.includes(picked)) choices[k] = picked;
-    else if(k === "row" && opts.includes(v.pullChoice)) choices[k] = v.pullChoice;
-    else choices[k] = k;
+  ALL_SLOTS.forEach(sl => {
+    const picked = v.choices && v.choices[sl];
+    if(known(picked) && poolFor(sl).includes(picked)) choices[sl] = picked;
+    else choices[sl] = DEFAULTS[sl];
   });
+  // legacy: v1 stored a single pull choice under the "row" key
+  if(v.choices && known(v.choices.row) && poolFor("pull").includes(v.choices.row)) choices.pull = v.choices.row;
+  else if(known(v.pullChoice) && poolFor("pull").includes(v.pullChoice)) choices.pull = v.pullChoice;
+  // legacy: v1 pike variants lived under the "pike_floor" key
+  if(v.choices && known(v.choices.pike_floor) && poolFor("vpush").includes(v.choices.pike_floor)) choices.vpush = v.choices.pike_floor;
+  const stretches = Array.isArray(v.stretches)
+    ? v.stretches.filter(s => Object.prototype.hasOwnProperty.call(STRETCH, s)) : ["hamstring","couch"];
   return {
     level, cycle:[0,1,2].includes(v.cycle) ? v.cycle : 0,
     sessions: Math.round(v.sessions),
     logBase: (typeof v.logBase === "number" && v.logBase >= 0) ? Math.round(v.logBase) : 0,
-    log, logDetail:detail, choices, progress, progressDate: today()
+    built: v.built !== false, log, logDetail:detail, choices, stretches, progress, progressDate: today()
   };
 }
 
@@ -442,11 +548,22 @@ function save(){
 const week = () => Math.min(4, Math.floor(S.sessions/7)+1);
 const Wk = () => WEEKS[week()-1];
 const day = () => DAYS[S.cycle];
-const pick = e => Array.isArray(e) ? (e.includes(S.choices[e[0]]) ? S.choices[e[0]] : e[0]) : e;
-const exList = d => (d||day()).ex.map(pick).filter(known);
-const slotFor = (d,id) => (d||day()).ex.find(e => Array.isArray(e) && e.includes(id));
-const targetFor = (id,w) => EX[id].base[S.level] + (EX[id].hold ? WEEKS[w-1].hold : WEEKS[w-1].rep);
-const allDone = () => exList().every(id => (S.progress[id]||0) >= unitsFor(id, Wk().sets));
+const pick = sl => known(S.choices[sl]) ? S.choices[sl] : DEFAULTS[sl];
+const exList = d => (d||day()).slots.map(pick).filter(known);
+const slotOf = (d,i) => (d||day()).slots[i];
+// In week 4 some exercises become a genuinely different movement (two-legged
+// bridge -> single-leg). Those carry hardId and adopt that exercise's own reps,
+// side flag and drawing — otherwise the target would silently double the load.
+const effId = (id, hard) => (hard && EX[id] && EX[id].hardId && known(EX[id].hardId)) ? EX[id].hardId : id;
+const targetFor = (id,w,hard) => {
+  const eid = effId(id, hard === undefined ? w === 4 : hard);
+  const e = EX[eid];
+  // When week 4 substitutes a harder movement, the substitution IS the
+  // progression — adding the week's rep bonus on top would raise load twice.
+  if(eid !== id) return e.base[S.level];
+  return e.base[S.level] + (e.hold ? WEEKS[w-1].hold : WEEKS[w-1].rep);
+};
+const allDone = () => exList().every(id => (S.progress[id]||0) >= unitsFor(effId(id, ui.preview || week()===4), Wk().sets));
 
 /* ================= render ================= */
 
@@ -508,6 +625,8 @@ function render(){
     ${ui.editGrid ? `<p class="hint">Tap a square to cycle it: Push \u2192 Core \u2192 Legs \u2192 empty. Your session count and what's up next both follow the grid, so a session you forgot to log gets fully credited. Override the order under <em>Next up</em> in the menu.</p>` : ""}
     <div class="key">${DAYS.map(x => `<span class="mono"><i class="pip" data-k="${x.key}"></i>${esc(x.name)}</span>`).join("")}</div>
   </section>
+
+  ${cooldownHTML()}
 
   ${S.sessions >= 28 ? `<div class="retest">
     <p>Four weeks done. Retest your max pushups and plank \u2014 one honest set of each \u2014 then restart. Your history stays; the weeks reset to 1 and you pick a level against your new numbers.</p>
@@ -576,31 +695,31 @@ function dial(){
 }
 
 function cardsHTML(){
-  const W = Wk(), hard = ui.preview || week() === 4;
-  return exList().map(id => {
-    const e = EX[id], t = targetFor(id, week()), done = S.progress[id]||0, max = unitsFor(id, W.sets);
-    const slot = slotFor(null, id);
+  const W = Wk(), hard = ui.preview || week() === 4, d = day();
+  return d.slots.map(sl => {
+    const id = pick(sl);
+    if(!known(id)) return "";
+    const eid = effId(id, hard), e = EX[eid], t = targetFor(id, week(), hard);
+    const done = S.progress[id]||0, max = unitsFor(eid, W.sets);
     const dots = Array.from({length:W.sets}, (_,i) => {
-      const full = halves(id) ? done >= (i+1)*2 : done > i;
-      const half = halves(id) && done === i*2+1;
+      const full = halves(eid) ? done >= (i+1)*2 : done > i;
+      const half = halves(eid) && done === i*2+1;
       return `<button class="dot${full?" filled":""}${half?" half":""}" data-act="dot" data-id="${id}" data-i="${i}"
         aria-pressed="${full}" aria-label="Set ${i+1}"></button>`;
     }).join("");
     const running = ui.timer && ui.timer.id === id;
     const tlabel = running ? ui.timer.left + "s \u2014 stop"
-      : halves(id) ? `start ${t}s \u00b7 ${done%2===0?"1st side":"2nd side"}` : `start ${t}s`;
-    const dlabel = halves(id) ? `${done%2===0?"1st":"2nd"} side done` : "mark set done";
+      : halves(eid) ? `start ${t}s \u00b7 ${done%2===0?"1st side":"2nd side"}` : `start ${t}s`;
+    const dlabel = halves(eid) ? `${done%2===0?"1st":"2nd"} side done` : "mark set done";
     const showSetDone = !e.hold && done < max;
     return `<article class="card${done>=max?" done":""}">
-      <div class="figbox">${(hard && HARD_FIGS[id]) || FIGS[id]}</div>
+      <div class="figbox">${(hard && (HARD_FIGS[id] || FIGS[eid])) || FIGS[id]}</div>
       <div class="cardbody">
         <div class="cardhead"><h3>${esc(e.name)}</h3>
           <span class="mono dose">${W.sets} \u00d7 ${e.hold?t+"s":t}${e.side?" / side":""}</span></div>
-        ${slot ? `<div class="swap" role="group" aria-label="Variant">${slot.filter(known).map(p =>
-          `<button class="chip${p===id?" on":""}" data-act="slot" data-slot="${slot[0]}" data-pick="${p}"
-            aria-pressed="${p===id}">${esc(EX[p].short||EX[p].name)}</button>`).join("")}</div>` : ""}
+        <button class="patlabel mono" data-act="open" data-panel="build" data-slot="${sl}">${esc(PATTERNS[sl==="antiext2"?"antiext":sl])} \u00b7 change</button>
         <p class="cue">${esc(e.cue)}</p>
-        ${hard ? `<p class="mono harder">week 4 \u2192 ${esc(e.harder)}${HARD_FIGS[id]?"":" (same position, harder tempo)"}</p>` : ""}
+        ${hard ? `<p class="mono harder">week 4 \u2192 ${esc(EX[id].harder)}${(HARD_FIGS[id]||EX[id].hardId)?"":" (same position, harder tempo)"}${EX[id].hardId?" \u00b7 reps drop, it's per side now":""}</p>` : ""}
         <div class="controls">
           <div class="dots" role="group" aria-label="Sets for ${esc(e.name)}">${dots}</div>
           ${e.hold ? `<button class="timer${running?" running":""}" data-act="timer" data-id="${id}" data-t="${t}">${tlabel}</button>` : ""}
@@ -608,6 +727,24 @@ function cardsHTML(){
         </div>
       </div></article>`;
   }).join("");
+}
+
+function cooldownHTML(){
+  if(!S.stretches.length) return "";
+  return `<section class="cooldown">
+    <div class="streakhead"><p class="mono muted">COOLDOWN \u00b7 AFTER TRAINING</p>
+      <button class="ghost mono" data-act="open" data-panel="stretch">edit</button></div>
+    <p class="capnote" style="margin:8px 0 12px">Optional, and deliberately not part of finishing the day. Static stretching before a session reduces force \u2014 save it for now, or for the evening.</p>
+    ${S.stretches.map(k => {
+      const s = STRETCH[k];
+      return `<article class="card stretch">
+        <div class="figbox">${SFIGS[k]}</div>
+        <div class="cardbody">
+          <div class="cardhead"><h3>${esc(s.name)}</h3>
+            <span class="mono dose">${s.sec}s${s.side?" / side":""}</span></div>
+          <p class="cue">${esc(s.cue)}</p>
+        </div></article>`;
+    }).join("")}</section>`;
 }
 
 function gridHTML(){
@@ -641,6 +778,8 @@ const sheetTitle = document.getElementById("sheettitle");
 const sheetBack = document.getElementById("sheetback");
 
 const MENU = [
+  {id:"build", t:"Build your block",   s:"Choose which exercise fills each movement slot for the next four weeks."},
+  {id:"stretch",t:"Cooldown stretches", s:"Optional mobility work to do after a session."},
   {id:"plan",  t:"Plan & progression", s:"Every week's targets, and a preview of the week-4 variations."},
   {id:"next",  t:"Next up",            s:"Realign the rotation if it drifts out of step."},
   {id:"dates", t:"Fix dates",          s:"Correct which day a session was logged on."},
@@ -675,7 +814,9 @@ function renderSheet(){
       ${installHTML()}`;
     return;
   }
-  if(p === "plan") sheetBody.innerHTML = planHTML();
+  if(p === "build") sheetBody.innerHTML = buildHTML();
+  else if(p === "stretch") sheetBody.innerHTML = stretchHTML();
+  else if(p === "plan") sheetBody.innerHTML = planHTML();
   else if(p === "next") sheetBody.innerHTML = nextHTML();
   else if(p === "backup") sheetBody.innerHTML = backupHTML();
   else if(p === "level"){
@@ -692,6 +833,42 @@ function renderSheet(){
   }
 }
 
+function buildHTML(){
+  const locked = S.sessions > 0 && week() > 1;
+  return `<div class="sect">
+    <p>Each day is built from movement patterns, not a fixed list. Pick the variation you can actually do \u2014 the pattern is what matters, not the exercise.</p>
+    ${locked ? `<p class="hint" style="margin-top:10px">You're mid-block (week ${week()}). Changing now means week 1 and week 4 aren't comparable. Fine if something hurts or you've run out of equipment; otherwise it's worth waiting for the retest.</p>` : ""}
+  </div>
+  ${DAYS.map(d => `<div class="sect plan" data-day="${d.key}" style="border-top:1px solid var(--line)">
+    <span class="mono" style="color:var(--acc)">${esc(d.name).toUpperCase()}</span>
+    ${d.slots.map(sl => {
+      const cur = pick(sl), pool = poolFor(sl);
+      return `<div class="slotrow">
+        <span class="mono muted">${esc(PATTERNS[sl === "antiext2" ? "antiext" : sl])}</span>
+        <div class="swap">${pool.map(id => `<button class="chip${id===cur?" on":""}"
+          data-act="setslot" data-slot="${sl}" data-id="${id}">${esc(EX[id].short||EX[id].name)}</button>`).join("")}</div>
+        <p class="slotcue">${esc(EX[cur].cue)}</p>
+      </div>`;
+    }).join("")}
+  </div>`).join("")}`;
+}
+
+function stretchHTML(){
+  return `<div class="sect">
+    <p>Pick what you want shown after each session. None of it counts toward finishing a day \u2014 it's there because it's useful, not to be scored.</p>
+    <p class="hint" style="margin-top:10px">If your hamstrings are what's blocking pike pushups, the seated fold is the one that moves the needle. Do it on days you've trained, or in the evening.</p>
+  </div>
+  <div class="sect" style="border-top:1px solid var(--line)">
+    ${Object.keys(STRETCH).map(k => {
+      const on = S.stretches.includes(k);
+      return `<button class="level" data-act="togglestretch" data-k="${k}" style="align-items:flex-start">
+        <span class="mono lvl-n">${on ? "\u2713" : "+"}</span>
+        <span><strong>${esc(STRETCH[k].name)}</strong>
+        <em>${esc(STRETCH[k].cue)}</em></span></button>`;
+    }).join("")}
+  </div>`;
+}
+
 function planHTML(){
   const pd = DAYS[ui.planDay == null ? S.cycle : ui.planDay];
   const list = exList(pd);
@@ -706,7 +883,7 @@ function planHTML(){
     <table class="ptable"><thead><tr><th></th>${[1,2,3,4].map(x =>
       `<th class="${x===w?"now":""}">W${x}</th>`).join("")}</tr></thead>
       <tbody>${list.map(id => `<tr><td class="pname">${esc(EX[id].name)}</td>${[1,2,3,4].map(x =>
-        `<td class="${x===w?"now":""}">${WEEKS[x-1].sets}\u00d7${EX[id].hold?targetFor(id,x)+"s":targetFor(id,x)}</td>`).join("")}</tr>`).join("")}</tbody></table>
+        `<td class="${x===w?"now":""}">${WEEKS[x-1].sets}\u00d7${EX[effId(id,x===4)].hold?targetFor(id,x,x===4)+"s":targetFor(id,x,x===4)}${EX[effId(id,x===4)].side?"/s":""}</td>`).join("")}</tr>`).join("")}</tbody></table>
     <ul class="planwhy">${WEEKS.map((x,i) =>
       `<li class="${i+1===w?"on":""}"><span class="mono">W${i+1}</span>${esc(x.note)}</li>`).join("")}</ul>
   </div>
@@ -750,10 +927,11 @@ function installHTML(){
 /* ================= actions ================= */
 
 function bump(id, idx, auto){
-  const cur = S.progress[id]||0, max = unitsFor(id, Wk().sets);
+  const eid = effId(id, ui.preview || week() === 4);
+  const cur = S.progress[id]||0, max = unitsFor(eid, Wk().sets);
   let next;
   if(auto) next = Math.min(max, cur+1);
-  else if(halves(id)){ const lo = idx*2; next = cur <= lo ? lo+1 : cur === lo+1 ? lo+2 : lo; }
+  else if(halves(eid)){ const lo = idx*2; next = cur <= lo ? lo+1 : cur === lo+1 ? lo+2 : lo; }
   else next = cur === idx+1 ? idx : idx+1;
   S.progress[id] = next; S.progressDate = today();
   save(); render();
@@ -857,7 +1035,12 @@ document.addEventListener("click", ev => {
       if(g && g.scrollIntoView) g.scrollIntoView({block:"center", behavior:"smooth"});
       return;
     }
-    openSheet(p); return;
+    openSheet(p);
+    if(p === "build" && el.dataset.slot){
+      const row = sheetBody.querySelector('[data-slot="'+el.dataset.slot+'"]');
+      if(row && row.scrollIntoView) row.scrollIntoView({block:"center"});
+    }
+    return;
   }
   if(a === "level"){ S.level = +el.dataset.i; save(); closeSheet(); render(); return; }
   if(a === "dot"){ bump(el.dataset.id, +el.dataset.i, false); return; }
@@ -867,7 +1050,16 @@ document.addEventListener("click", ev => {
     else startTimer(id, +el.dataset.t);
     return;
   }
-  if(a === "slot"){ S.choices[el.dataset.slot] = el.dataset.pick; save(); render(); return; }
+  if(a === "setslot"){
+    S.choices[el.dataset.slot] = el.dataset.id;
+    delete S.progress[el.dataset.id];
+    save(); renderSheet(); render(); return;
+  }
+  if(a === "togglestretch"){
+    const k = el.dataset.k;
+    S.stretches = S.stretches.includes(k) ? S.stretches.filter(x => x !== k) : S.stretches.concat([k]);
+    save(); renderSheet(); render(); return;
+  }
   if(a === "setdone"){ bump(el.dataset.id, null, true); return; }
   if(a === "togglebody"){ ui.bodyOpen = !ui.bodyOpen; render(); return; }
   if(a === "finish"){ finishDay(); return; }
