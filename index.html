@@ -580,6 +580,10 @@ function render(){
     <button class="menubtn" data-act="menu" aria-haspopup="dialog">\u22ef menu</button>
   </header>
 
+  ${S.sessions >= 28 ? `<div class="retest">
+    <p>Four weeks done. Retest your max pushups and plank \u2014 one honest set of each \u2014 then restart. Your history stays; the weeks reset to 1 and you pick a level against your new numbers.</p>
+    <button class="chip on" data-act="restart">retest &amp; restart</button></div>` : ""}
+
   <section class="dial-block">
     ${dial(d)}
     <div class="legend">
@@ -627,10 +631,6 @@ function render(){
   </section>
 
   ${cooldownHTML()}
-
-  ${S.sessions >= 28 ? `<div class="retest">
-    <p>Four weeks done. Retest your max pushups and plank \u2014 one honest set of each \u2014 then restart. Your history stays; the weeks reset to 1 and you pick a level against your new numbers.</p>
-    <button class="chip on" data-act="restart">retest &amp; restart</button></div>` : ""}
 
   <footer>
     <p>Stop every set about <strong>2 reps before failure</strong>. Going to failure daily is what breaks the streak.</p>
