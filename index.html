@@ -290,6 +290,7 @@ const EX = {
   plank:{name:"Plank",pat:"antiext",hold:true,base:[20,40,60],cue:"Squeeze your glutes and tuck the ribs down. A sagging plank trains nothing.",harder:"Lift one foot, alternate every 5s"},
   hollow:{name:"Hollow hold",pat:"antiext",hold:true,base:[15,25,40],cue:"Press the lower back into the floor. If it lifts, raise the legs higher or bend the knees.",harder:"Arms fully overhead"},
   birddog:{name:"Bird dog",pat:"antiext",side:true,base:[6,8,10],cue:"On all fours, extend opposite arm and leg, pause, return. Hips stay level \u2014 imagine balancing a glass on your lower back.",harder:"Pause 5 seconds at full extension"},
+  revcrunch:{name:"Reverse crunches",short:"Rev crunch",pat:"antiext",base:[8,12,16],cue:"On your back, knees bent above your hips. Curl the hips off the floor to draw the knees toward your chest, pause, lower slowly. Slow beats swing \u2014 no momentum from the legs.",harder:"Legs less bent \u2014 the straighter, the harder"},
   // anti-rotation core
   deadbug:{name:"Dead bug",pat:"antirot",side:true,base:[8,10,12],cue:"Lower back stays glued to the floor. Alternate sides each rep. Slow beats far.",harder:"Hold a book in the moving hand"},
   birddog2:{name:"Bird dog",short:"Bird dog",pat:"antirot",side:true,base:[6,8,10],cue:"On all fours, extend opposite arm and leg, pause, return. Hips stay level.",harder:"Pause 5 seconds at full extension"},
@@ -417,7 +418,8 @@ Object.assign(FIGS, {
   goodmorning: fig("Good morning", pl("46,52 46,32 70,22")+ci(78,20,5)+pl("70,22 66,10")+pl("70,22 78,12")),
   sldl: fig("Single-leg deadlift", pl("40,52 40,34 64,26")+ci(72,24,5)+pl("40,34 14,22")+pl("64,26 62,40")),
   revlunge: fig("Reverse lunge", pl("34,50 34,32 54,26")+pl("54,26 72,42 82,50")+pl("54,26 54,15")+ci(54,9,5)),
-  towelrow: fig("Door towel row", pl("80,6 80,54")+pl("22,48 44,42 66,34")+ci(74,31,5)+pl("66,34 78,28"))
+  towelrow: fig("Door towel row", pl("80,6 80,54")+pl("22,48 44,42 66,34")+ci(74,31,5)+pl("66,34 78,28")),
+  revcrunch: fig("Reverse crunch", pl("24,50 48,50")+ci(20,51,5)+pl("48,50 54,36")+pl("54,36 42,28")+pl("42,28 44,16"))
 });
 
 Object.assign(HARD_FIGS, {
@@ -430,7 +432,8 @@ Object.assign(HARD_FIGS, {
   splitsquat: fig("Split squat, rear foot elevated", pl("8,36 28,36")+pl("24,36 24,54")+pl("64,50 64,34 46,28")+pl("46,28 30,38 16,34")+pl("46,28 46,16")+ci(46,10,5)),
   slbridge: fig("Single-leg bridge, foot elevated", pl("58,36 82,36")+pl("78,36 78,54")+pl("66,36 66,30 44,30 24,44")+ci(17,46,5)+pl("44,30 74,18")),
   revlunge: fig("Reverse lunge, front foot raised", pl("24,42 46,42")+pl("28,42 28,54")+pl("34,42 34,30 54,24")+pl("54,24 72,40 82,50")+pl("54,24 54,13")+ci(54,7,5)),
-  towelrow: fig("Door towel row, feet forward", pl("80,6 80,54")+pl("14,50 42,44 66,36")+ci(74,33,5)+pl("66,36 78,28"))
+  towelrow: fig("Door towel row, feet forward", pl("80,6 80,54")+pl("14,50 42,44 66,36")+ci(74,33,5)+pl("66,36 78,28")),
+  revcrunch: fig("Reverse crunch, legs straighter", pl("24,50 48,50")+ci(20,51,5)+pl("48,50 54,36")+pl("54,36 48,22")+pl("48,22 52,8"))
 });
 
 const SFIGS = {
