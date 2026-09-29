@@ -1,5 +1,5 @@
 /* Bump CACHE when you change any shell file — the old cache is then dropped. */
-const CACHE = "strength-v19";
+const CACHE = "strength-v20";
 const SHELL = [
   "./",
   "./index.html",
